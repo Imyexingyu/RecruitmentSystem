@@ -1,0 +1,19 @@
+# 配置文件
+server:
+  port: 7001                  # 定义运行端口
+
+security:
+  basic:
+    enabled: true         # 启用安全认证处理
+  user:
+    name: admin           # 用户名
+    password: 123456    # 密码
+
+eureka:
+  client:             # 客户端进行Eureka注册的配置
+    service-url:
+      defaultZone: http://admin:123456@localhost:7001/eureka
+    register-with-eureka: false    # 当前的微服务不注册到eureka之中
+    fetch-registry: false     # 不通过eureka获取注册信息
+  instance:                   # eureak实例定义
+    hostname: eureka-7001.com # 定义Eureka实例所在的主机名称
