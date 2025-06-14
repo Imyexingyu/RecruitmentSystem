@@ -9,21 +9,54 @@
     <modules>
         <module>gateway-service</module><module>auth-service</module><module>user-service</module><module>resume-service</module><module>job-service</module><module>interview-service</module><module>admin-service</module><module>notify-service</module>
     </modules>
+
     <properties>
-        <java.version>1.8</java.version>
         <spring.boot.version>2.6.13</spring.boot.version>
+        <jdk.version>1.8</jdk.version>
+        <junit.version>4.12</junit.version>
+        <spring-boot-dependencies.version>
+            1.5.9.RELEASE</spring-boot-dependencies.version>
+        <spring-cloud-dependencies.version>
+            Edgware.RELEASE</spring-cloud-dependencies.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <druid.version>1.1.6</druid.version>
+        <mysql-connector-java.version>8.0.11</mysql-connector-java.version>
+        <feign-httpclient.version>8.18.0</feign-httpclient.version>
     </properties>
     <dependencyManagement>
         <dependencies>
+
+
+
             <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql-connector-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid</artifactId>
+                <version>${druid.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>				<!-- 定义SpringBoot依赖管理 -->
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version}</version>
+                <version>${spring-boot-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+
         </dependencies>
     </dependencyManagement>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -33,5 +66,7 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
     </build>
+
 </project>
