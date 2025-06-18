@@ -1,6 +1,7 @@
 server:
   port: 9501
 
+
 spring:
   application:
     name: gateway-service
@@ -12,12 +13,12 @@ eureka:
   client:
     service-url:
       defaultZone: http://admin:123456@localhost:7001/eureka
-
 zuul:
   routes:
     auth-service:
       path: /auth/**
       serviceId: auth-service
+      strip-prefix: false
     user-service:
       path: /user/**
       serviceId: user-service
@@ -26,4 +27,5 @@ zuul:
       serviceId: resume-service
   sensitive-headers:
   add-host-header: true
+
 

@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServletRequest;
 @Component
 public class JwtTokenFilter extends ZuulFilter {
 
+    private final String secret = "recruit-secret";
+
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -30,13 +32,21 @@ public class JwtTokenFilter extends ZuulFilter {
 
     @Override
     public boolean shouldFilter() {
-        RequestContext ctx = RequestContext.getCurrentContext();
-        HttpServletRequest request = ctx.getRequest();
+        HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
+        String path = request.getRequestURI();
 
-        // 放行注册登录接口
-        String uri = request.getRequestURI();
-        return !(uri.contains("/auth/login") || uri.contains("/auth/register"));
+        // 打印日志确认路径
+        System.out.println("Zuul 请求路径：" + path);
+
+        // 明确放行 auth 登录、注册接口
+        if (path.startsWith("/auth/login") || path.startsWith("/auth/register")) {
+            System.out.println("放行路径：" + path);
+            return false;
+        }
+
+        return true;
     }
+
 
     @Override
     public Object run() {
@@ -44,27 +54,26 @@ public class JwtTokenFilter extends ZuulFilter {
         HttpServletRequest request = ctx.getRequest();
 
         String token = request.getHeader("Authorization");
+
         if (token == null || !token.startsWith("Bearer ")) {
             deny(ctx, 401, "Token 缺失");
             return null;
         }
 
         token = token.replace("Bearer ", "");
+
         try {
-            // 校验 Redis 中是否存在
+            // 检查 Redis 中是否存在
             if (redisTemplate.opsForValue().get("TOKEN:" + token) == null) {
-                deny(ctx, 401, "Token 已失效或未登录");
+                deny(ctx, 401, "Token 不存在或已过期");
                 return null;
             }
 
-            // 校验 JWT 合法性
-            String secret = "recruit-secret";
             Claims claims = Jwts.parser()
                     .setSigningKey(secret)
                     .parseClaimsJws(token)
                     .getBody();
 
-            // 将用户信息传递下游服务
             ctx.addZuulRequestHeader("username", claims.getSubject());
             ctx.addZuulRequestHeader("role", claims.get("role").toString());
 
@@ -74,7 +83,6 @@ public class JwtTokenFilter extends ZuulFilter {
 
         return null;
     }
-
     private void deny(RequestContext ctx, int status, String msg) {
         ctx.setSendZuulResponse(false);
         ctx.setResponseStatusCode(status);

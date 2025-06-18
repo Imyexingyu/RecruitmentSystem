@@ -1,6 +1,8 @@
 package cn.cuit.authservice.controller;
 
 
+import cn.cuit.authservice.Dao.UserInitDTO;
+import cn.cuit.authservice.Feign.RemoteUserClient;
 import cn.cuit.authservice.entity.User;
 import cn.cuit.authservice.mapper.UserMapper;
 import cn.cuit.authservice.util.JwtUtil;
@@ -21,6 +23,7 @@ public class AuthController {
 
     private final UserMapper userMapper;
     private final JwtUtil jwtUtil;
+    private final RemoteUserClient remoteUserClient;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @Autowired
@@ -34,8 +37,38 @@ public class AuthController {
             result.put("msg", "用户名已存在");
             return result;
         }
+
         user.setPassword(encoder.encode(user.getPassword()));
-        userMapper.save(user);
+        userMapper.save(user); // 保存用户
+
+        Long userId = user.getId();
+        if (userId == null) {
+            // 如果id没回填，则重新查询获取ID
+            User savedUser = userMapper.findByUsername(user.getUsername());
+            if (savedUser == null) {
+                result.put("code", 500);
+                result.put("msg", "注册失败，无法获取用户ID");
+                return result;
+            }
+            userId = savedUser.getId();
+        }
+
+        UserInitDTO dto = new UserInitDTO();
+        dto.setUserId(userId);
+        dto.setUsername(user.getUsername());
+
+        try {
+            if ("candidate".equalsIgnoreCase(user.getRole())) {
+                remoteUserClient.initCandidate(dto);
+            } else if ("employer".equalsIgnoreCase(user.getRole())) {
+                remoteUserClient.initEmployer(dto);
+            }
+        } catch (Exception e) {
+            result.put("code", 500);
+            result.put("msg", "注册成功，但同步 user-service 失败：" + e.getMessage());
+            return result;
+        }
+
         result.put("code", 200);
         result.put("msg", "注册成功");
         return result;
@@ -51,7 +84,6 @@ public class AuthController {
             return result;
         }
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        // 写入 Redis，2小时过期（单位换成 TimeUnit.HOURS）
         redisTemplate.opsForValue().set("TOKEN:" + token, "1", 2, TimeUnit.HOURS);
 
         result.put("code", 200);
@@ -61,4 +93,5 @@ public class AuthController {
         return result;
     }
 }
+
 

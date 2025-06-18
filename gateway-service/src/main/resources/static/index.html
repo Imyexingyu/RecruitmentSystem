@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>登录 / 注册</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 360px;
+            background: #fff;
+            padding: 30px 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        form {
+            display: none;
+            flex-direction: column;
+        }
+        form.active {
+            display: flex;
+        }
+        label {
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="password"],
+        select {
+            padding: 8px 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: #007bff;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .toggle-link {
+            margin-top: 10px;
+            text-align: center;
+            color: #007bff;
+            cursor: pointer;
+            user-select: none;
+        }
+        .toggle-link:hover {
+            text-decoration: underline;
+        }
+        .msg {
+            text-align: center;
+            margin-top: 10px;
+            color: red;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 id="form-title">登录</h2>
+
+    <!-- 登录表单 -->
+    <form id="login-form" class="active">
+        <label for="login-username">用户名</label>
+        <input type="text" id="login-username" placeholder="请输入用户名" required />
+        <label for="login-password">密码</label>
+        <input type="password" id="login-password" placeholder="请输入密码" required />
+        <button type="submit">登录</button>
+        <div class="toggle-link" id="to-register">没有账号？注册</div>
+    </form>
+
+    <!-- 注册表单 -->
+    <form id="register-form">
+        <label for="register-username">用户名</label>
+        <input type="text" id="register-username" placeholder="请输入用户名" required />
+        <label for="register-password">密码</label>
+        <input type="password" id="register-password" placeholder="请输入密码" required />
+        <label for="register-role">请选择角色</label>
+        <select id="register-role" required>
+            <option value="">请选择角色</option>
+            <option value="jobseeker">求职者</option>
+            <option value="employer">企业</option>
+        </select>
+        <button type="submit">注册</button>
+        <div class="toggle-link" id="to-login">已有账号？登录</div>
+    </form>
+
+    <div class="msg" id="msg"></div>
+</div>
+
+<script>
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const formTitle = document.getElementById('form-title');
+    const msg = document.getElementById('msg');
+
+    document.getElementById('to-register').addEventListener('click', () => {
+        loginForm.classList.remove('active');
+        registerForm.classList.add('active');
+        formTitle.textContent = '注册';
+        msg.textContent = '';
+    });
+
+    document.getElementById('to-login').addEventListener('click', () => {
+        registerForm.classList.remove('active');
+        loginForm.classList.add('active');
+        formTitle.textContent = '登录';
+        msg.textContent = '';
+    });
+
+    // 登录提交
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        msg.textContent = '';
+        msg.style.color = 'red';
+
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+
+        try {
+            const res = await fetch('http://localhost:9501/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password}),
+            });
+            const data = await res.json();
+
+            if (res.ok && data.code === 200) {
+                msg.style.color = 'green';
+                msg.textContent = '登录成功！Token 已保存';
+                localStorage.setItem('token', data.token);
+                // 这里可以跳转页面或者做其他处理
+                 const  role = data.role;
+                if (role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else if (role === 'employer') {
+                    window.location.href = 'employer.html';
+                } else if (role === 'jobseeker') {
+                    window.location.href = 'jobseeker.html';
+                } else {
+                    alert('未知角色');
+                }
+            } else {
+                msg.textContent = data.msg || '登录失败';
+            }
+        } catch (err) {
+            msg.textContent = '请求出错，请稍后重试';
+        }
+    });
+
+    // 注册提交
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        msg.textContent = '';
+        msg.style.color = 'red';
+
+        const username = document.getElementById('register-username').value.trim();
+        const password = document.getElementById('register-password').value.trim();
+        const role = document.getElementById('register-role').value;
+
+        if (!role) {
+            msg.textContent = '请选择角色';
+            return;
+        }
+
+        try {
+            const res = await fetch('http://localhost:9501/auth/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password, role}),
+            });
+            const data = await res.json();
+            if (res.ok && data.code === 200) {
+                msg.style.color = 'green';
+                msg.textContent = '注册成功！请登录';
+                // 自动切换回登录
+                registerForm.classList.remove('active');
+                loginForm.classList.add('active');
+                formTitle.textContent = '登录';
+            } else {
+                msg.textContent = data.msg || '注册失败';
+            }
+        } catch (err) {
+            msg.textContent = '请求出错，请稍后重试';
+        }
+    });
+</script>
+</body>
+</html>
