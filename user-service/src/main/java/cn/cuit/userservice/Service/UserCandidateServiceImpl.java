@@ -12,8 +12,8 @@ public class UserCandidateServiceImpl implements UserCandidateService {
     private UserCandidateMapper candidateMapper;
 
     @Override
-    public UserCandidate getByUserId(Long userId) {
-        return candidateMapper.findByUserId(userId);
+    public UserCandidate getByUserId(Long user_id) {
+        return candidateMapper.findByUserId(user_id);
     }
 
     @Override

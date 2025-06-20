@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>用户首页</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+        }
+        .sidebar {
+            height: calc(100vh - 56px);
+            background-color: #f8f9fa;
+            padding-top: 1rem;
+            border-right: 1px solid #dee2e6;
+        }
+        .sidebar a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .sidebar a:hover {
+            background-color: #e2e6ea;
+            text-decoration: none;
+        }
+        .main-content {
+            padding: 30px;
+            background-color: #ffffff;
+            min-height: calc(100vh - 56px);
+        }
+        .navbar .dropdown-menu {
+            right: 0;
+            left: auto;
+        }
+        #editProfileForm .form-group label {
+            font-weight: bold;
+        }
+        #msg {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <a class="navbar-brand" href="#">招聘系统</a>
+    <div class="ml-auto">
+        <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
+                    <span th:text="${username}">用户名</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="#" onclick="logout()">退出登录</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar">
+            <a onclick="loadPage('job-list')">职位列表</a>
+            <a onclick="loadPage('edit-profile')">编辑信息</a>
+            <a onclick="loadPage('resume')">简历管理</a>
+        </div>
+
+        <div class="col-md-10 main-content" id="mainContent">
+            <h4>欢迎来到用户中心，请选择左侧功能。</h4>
+        </div>
+    </div>
+</div>
+
+<script>
+    const currentUserId = 123;
+
+    function loadPage(page) {
+        const mainContent = document.getElementById('mainContent');
+        mainContent.innerHTML = "<p>加载中...</p>";
+
+        if (page === 'job-list') {
+            mainContent.innerHTML = "<h4>职位列表</h4><p>这里显示职位数据...</p>";
+        } else if (page === 'edit-profile') {
+            mainContent.innerHTML = `
+                <h4 class="mb-4">编辑信息</h4>
+                <form id="editProfileForm" class="w-75">
+                    <input type="hidden" id="user_id" />
+                    <div class="form-group row">
+                        <label for="name" class="col-sm-2 col-form-label">姓名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="name" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="gender" class="col-sm-2 col-form-label">性别</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="gender">
+                                <option value="男">男</option>
+                                <option value="女">女</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="birthday" class="col-sm-2 col-form-label">生日</label>
+                        <div class="col-sm-10">
+                            <input type="date" class="form-control" id="birthday" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="education" class="col-sm-2 col-form-label">学历</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="education" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="experience" class="col-sm-2 col-form-label">经验</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control" id="experience" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="skills" class="col-sm-2 col-form-label">技能</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control" id="skills" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-10 offset-sm-2">
+                            <button type="submit" class="btn btn-primary">保存信息</button>
+                        </div>
+                    </div>
+                </form>
+                <div id="msg" class="ml-3"></div>
+            `;
+
+            fetch(`http://localhost:9501/user/info`)
+                .then(res => {
+                    if (!res.ok) throw new Error('加载失败');
+                    return res.json();
+                })
+                .then(data => {
+                    if (data) {
+                        document.getElementById('user_id').value = data.user_id || '';
+                        document.getElementById('name').value = data.name || '';
+                        document.getElementById('gender').value = data.gender || '男';
+                        document.getElementById('birthday').value = data.birthday ? data.birthday.split('T')[0] : '';
+                        document.getElementById('education').value = data.education || '';
+                        document.getElementById('experience').value = data.experience || '';
+                        document.getElementById('skills').value = data.skills || '';
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('msg').style.color = 'red';
+                    document.getElementById('msg').textContent = '加载用户信息失败';
+                });
+
+            document.getElementById('editProfileForm').onsubmit = function(e) {
+                e.preventDefault();
+                const candidate = {
+                    user_id: document.getElementById('user_id').value,
+                    name: document.getElementById('name').value,
+                    gender: document.getElementById('gender').value,
+                    birthday: document.getElementById('birthday').value,
+                    education: document.getElementById('education').value,
+                    experience: document.getElementById('experience').value,
+                    skills: document.getElementById('skills').value,
+                    avatar: ''
+                };
+
+                fetch('http://localhost:9501/user/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(candidate)
+                })
+                    .then(res => res.text())
+                    .then(msg => {
+                        const msgDiv = document.getElementById('msg');
+                        msgDiv.style.color = 'green';
+                        msgDiv.textContent = msg;
+                    })
+                    .catch(() => {
+                        const msgDiv = document.getElementById('msg');
+                        msgDiv.style.color = 'red';
+                        msgDiv.textContent = '保存失败';
+                    });
+            };
+        } else if (page === 'resume') {
+            mainContent.innerHTML = "<h4>简历管理</h4><p>上传、修改简历内容...</p>";
+        }
+    }
+
+    function logout() {
+        alert("已退出登录");
+        window.location.href = "http://localhost:9501/index.html";
+    }
+</script>
+</body>
+</html>

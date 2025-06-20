@@ -20,3 +20,4 @@ eureka:
 mybatis:
   type-aliases-package: cn.cuit.userservice.Entity
   mapper-locations: classpath:/mapper/*.xml
+

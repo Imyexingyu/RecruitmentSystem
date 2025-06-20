@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 @Component
@@ -37,7 +38,8 @@ public class JwtTokenFilter extends ZuulFilter {
 
         // 打印日志确认路径
         System.out.println("Zuul 请求路径：" + path);
-
+        String token = request.getHeader("Authorization");
+        System.out.println(token);
         // 明确放行 auth 登录、注册接口
         if (path.startsWith("/auth/login") || path.startsWith("/auth/register")) {
             System.out.println("放行路径：" + path);
@@ -55,8 +57,20 @@ public class JwtTokenFilter extends ZuulFilter {
 
         String token = request.getHeader("Authorization");
 
+// ✅ 从 Cookie 读取
+        if (token == null) {
+            if (request.getCookies() != null) {
+                for (Cookie cookie : request.getCookies()) {
+                    if ("token".equals(cookie.getName())) {
+                        token = "Bearer " + cookie.getValue();
+                        break;
+                    }
+                }
+            }
+        }
         if (token == null || !token.startsWith("Bearer ")) {
-            deny(ctx, 401, "Token 缺失");
+            System.out.println(token);
+            deny(ctx, 401, "你没有登录");
             return null;
         }
 
@@ -65,7 +79,7 @@ public class JwtTokenFilter extends ZuulFilter {
         try {
             // 检查 Redis 中是否存在
             if (redisTemplate.opsForValue().get("TOKEN:" + token) == null) {
-                deny(ctx, 401, "Token 不存在或已过期");
+                deny(ctx, 401, "登录过期/你没有登录");
                 return null;
             }
 
@@ -73,12 +87,16 @@ public class JwtTokenFilter extends ZuulFilter {
                     .setSigningKey(secret)
                     .parseClaimsJws(token)
                     .getBody();
-
+            ctx.addZuulRequestHeader("X-Gateway-Auth", "recruit-gateway-secret");
             ctx.addZuulRequestHeader("username", claims.getSubject());
+            System.out.println(claims.getSubject());
             ctx.addZuulRequestHeader("role", claims.get("role").toString());
+            System.out.println(claims.get("role"));
+            ctx.addZuulRequestHeader("user_id", claims.get("id").toString());
+            System.out.println(claims.get("user_id"));
 
         } catch (Exception e) {
-            deny(ctx, 403, "Token 非法");
+            deny(ctx, 403, "非法登录");
         }
 
         return null;

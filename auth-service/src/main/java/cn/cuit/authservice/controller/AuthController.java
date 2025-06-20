@@ -12,6 +12,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -54,11 +56,13 @@ public class AuthController {
         }
 
         UserInitDTO dto = new UserInitDTO();
-        dto.setUserId(userId);
+        dto.setUser_id(userId);
         dto.setUsername(user.getUsername());
+        System.out.println(dto.getUser_id());
+        System.out.println(dto.getUsername());
 
         try {
-            if ("candidate".equalsIgnoreCase(user.getRole())) {
+            if ("jobseeker".equalsIgnoreCase(user.getRole())) {
                 remoteUserClient.initCandidate(dto);
             } else if ("employer".equalsIgnoreCase(user.getRole())) {
                 remoteUserClient.initEmployer(dto);
@@ -75,23 +79,32 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody User input) {
-        User user = userMapper.findByUsername(input.getUsername());
+    public Map<String, Object> login(@RequestBody User input, HttpServletResponse response) {
         Map<String, Object> result = new HashMap<>();
+        User user = userMapper.findByUsername(input.getUsername());
         if (user == null || !encoder.matches(input.getPassword(), user.getPassword())) {
             result.put("code", 401);
             result.put("msg", "用户名或密码错误");
             return result;
         }
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
+
+        String token = jwtUtil.generateToken(user.getId(),user.getUsername(), user.getRole());
+        System.out.println(token);
         redisTemplate.opsForValue().set("TOKEN:" + token, "1", 2, TimeUnit.HOURS);
+
+        // ✅ 设置 Cookie：HttpOnly, SameSite=None, Path=/
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(false); // JS 访问可为 false，安全建议为 true
+        cookie.setPath("/");
+        cookie.setMaxAge(2 * 60 * 60); // 2小时
+        response.addCookie(cookie);
 
         result.put("code", 200);
         result.put("msg", "登录成功");
-        result.put("token", token);
         result.put("role", user.getRole());
         return result;
     }
+
 }
 
 

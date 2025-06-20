@@ -6,7 +6,7 @@ import java.util.Date;
 @Data
 public class UserEmployer {
     private Long id;
-    private Long userId;       // 关联 user 表主键
+    private Long user_id;
     private String companyName;
     private String address;
     private String industry;

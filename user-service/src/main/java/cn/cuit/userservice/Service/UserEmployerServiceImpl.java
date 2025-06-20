@@ -12,8 +12,8 @@ public class UserEmployerServiceImpl implements UserEmployerService {
     private UserEmployerMapper employerMapper;
 
     @Override
-    public UserEmployer getByUserId(Long userId) {
-        return employerMapper.findByUserId(userId);
+    public UserEmployer getByUserId(Long user_id) {
+        return employerMapper.findByUserId(user_id);
     }
 
     @Override

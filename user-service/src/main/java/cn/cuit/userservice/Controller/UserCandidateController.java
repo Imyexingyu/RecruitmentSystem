@@ -5,16 +5,21 @@ import cn.cuit.userservice.Service.UserCandidateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
-@RequestMapping("/candidate")
+@RequestMapping("/user")
 public class UserCandidateController {
 
     @Autowired
     private UserCandidateService candidateService;
 
-    @GetMapping("/{userId}")
-    public UserCandidate getCandidateInfo(@PathVariable Long userId) {
-        return candidateService.getByUserId(userId);
+    @GetMapping("/info")
+    public UserCandidate getCandidateInfo(HttpServletRequest request) {
+        Long id = Long.valueOf((request.getHeader("user_id")));
+        return candidateService.getByUserId(id);
     }
 
     @PostMapping("/save")
@@ -24,7 +29,9 @@ public class UserCandidateController {
     }
 
     @PostMapping("/update")
-    public String updateCandidateInfo(@RequestBody UserCandidate candidate) {
+    public String updateCandidateInfo(@RequestBody UserCandidate candidate,@RequestHeader("user_id") Long userIdFromToken) {
+        //强制设置user_id为登录用户的id防止越权访问
+        candidate.setUser_id(userIdFromToken);
         int result = candidateService.update(candidate);
         return result > 0 ? "更新成功" : "更新失败";
     }

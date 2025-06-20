@@ -13,4 +13,5 @@ public interface RemoteUserClient {
 
     @PostMapping("/init/employer")
     void initEmployer(@RequestBody UserInitDTO dto);
+
 }
