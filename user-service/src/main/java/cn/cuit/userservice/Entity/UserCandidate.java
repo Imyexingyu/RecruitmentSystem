@@ -16,6 +16,8 @@ public class UserCandidate {
     private String experience;  // 工作/校园经历
     private String skills;      // 技能证书
     private String avatar;      // 头像路径
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date updatedAt;
 }

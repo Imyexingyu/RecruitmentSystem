@@ -23,6 +23,10 @@ zuul:
       path: /user/**
       serviceId: user-service
       strip-prefix: false
+    job-service:
+      path: /jobs/**
+      serviceId: job-service
+      strip-prefix: false
     resume-service:
       path: /resume/**
       serviceId: resume-service

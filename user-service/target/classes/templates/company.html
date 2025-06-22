@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"></meta>
+  <title>企业用户中心</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    body { height: 100vh; margin: 0; }
+    .sidebar {
+      height: calc(100vh - 56px);
+      background-color: #f8f9fa;
+      padding-top: 1rem;
+      border-right: 1px solid #dee2e6;
+    }
+    .sidebar a {
+      display: block;
+      padding: 10px 15px;
+      color: #333;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .sidebar a:hover {
+      background-color: #e2e6ea;
+    }
+    .main-content { padding: 20px; }
+    .navbar .dropdown-menu {
+      right: 0;
+      left: auto;
+    }
+    table {
+      width: 100%;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">招聘系统 - 企业中心</a>
+  <div class="ml-auto">
+    <ul class="navbar-nav">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
+          <span th:text="${username}">企业用户</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a class="dropdown-item" href="#" onclick="logout()">退出登录</a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2 sidebar">
+      <a onclick="loadPage('post-job')">发布职位</a>
+      <a onclick="loadPage('manage-jobs')">职位管理</a>
+      <a onclick="loadPage('filter-resumes')">简历筛选</a>
+      <a onclick="loadPage('search-jobs')">职位搜索</a>
+      <a onclick="loadPage('company-profile')">公司信息</a>
+    </div>
+    <div class="col-md-10 main-content" id="mainContent">
+      <h4>欢迎来到企业用户中心，请选择左侧功能。</h4>
+    </div>
+  </div>
+</div>
+
+<script>
+  function loadPage(page) {
+    const content = document.getElementById("mainContent");
+
+    if (page === 'post-job') {
+      content.innerHTML = `
+        <h4>发布职位</h4>
+        <form id="postForm">
+          <div class="form-group">
+            <label>职位名称</label>
+            <input class="form-control" id="title" required="required" />
+          </div>
+          <div class="form-group">
+            <label>工作地点</label>
+            <input class="form-control" id="location" required="required" />
+          </div>
+          <div class="form-group">
+            <label>薪资</label>
+            <input class="form-control" id="salary" required="required" />
+          </div>
+          <div class="form-group">
+            <label>职位要求</label>
+            <textarea class="form-control" id="requirements" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>职位描述</label>
+            <textarea class="form-control" id="description" rows="4"></textarea>
+          </div>
+          <button class="btn btn-success" type="submit">发布</button>
+          <div id="postMsg" style="margin-top:10px;"></div>
+        </form>`;
+
+      document.getElementById("postForm").onsubmit = function(e) {
+        e.preventDefault();
+        const job = {
+          employerId: 1,
+          title: document.getElementById("title").value,
+          location: document.getElementById("location").value,
+          salary: document.getElementById("salary").value,
+          requirements: document.getElementById("requirements").value,
+          description: document.getElementById("description").value
+        };
+        fetch("http://localhost:9501/jobs/publish", {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(job)
+        })
+                .then(res => res.text())
+                .then(msg => {
+                  document.getElementById("postMsg").innerText = msg;
+                  document.getElementById("postMsg").style.color = "green";
+                })
+                .catch(() => {
+                  document.getElementById("postMsg").innerText = "发布失败";
+                  document.getElementById("postMsg").style.color = "red";
+                });
+      };
+
+    } else if (page === 'manage-jobs') {
+      content.innerHTML = `
+        <h4>职位管理</h4>
+        <table>
+          <thead><tr><th>职位名称</th><th>地点</th><th>薪资</th><th>发布时间</th><th>操作</th></tr></thead>
+          <tbody id="jobList"><tr><td colspan="5">加载中...</td></tr></tbody>
+        </table>`;
+      let currentEmployerId = null;
+
+      fetch('http://localhost:9501/user/companyInfo')
+              .then(res => res.json())
+              .then(data => {
+                currentEmployerId = data.user_id;
+                fetch(`http://localhost:9501/jobs/employer/${currentEmployerId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                          const jobList = document.getElementById("jobList");
+                          jobList.innerHTML = '';
+                          data.forEach(job => {
+                            jobList.innerHTML += `<tr>
+              <td>${job.title}</td>
+              <td>${job.location}</td>
+              <td>${job.salary}</td>
+              <td>${new Date(job.createdTime).toLocaleDateString()}</td>
+              <td>
+                <button class='btn btn-sm btn-info' onclick='viewDetail(${job.id})'>详情</button>
+                <button class='btn btn-sm btn-warning' onclick='editJob(${job.id})'>编辑</button>
+                <button class='btn btn-sm btn-primary' onclick='viewResumes(${job.id})'>筛选简历</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteJob(${job.id})'>删除</button>
+              </td>
+            </tr>`;
+                          });
+                        })
+                        .catch(() => {
+                          document.getElementById("jobList").innerHTML = '<tr><td colspan="5">加载失败</td></tr>';
+                        });
+              })
+              .catch(() => {
+                alert('获取企业信息失败');
+              });
+
+
+
+    } else if (page === 'filter-resumes') {
+      content.innerHTML = `
+        <h4>简历筛选</h4>
+        <div class="form-group">
+          <label>职位 ID：</label>
+          <input class="form-control" id="filterJobId" />
+          <button class="btn btn-primary mt-2" onclick="loadApplications()">加载简历</button>
+        </div>
+        <table class="table table-bordered mt-3">
+          <thead><tr><th>候选人ID</th><th>简历</th><th>投递时间</th><th>状态</th></tr></thead>
+          <tbody id="resumeTable"><tr><td colspan="4">请先输入职位 ID</td></tr></tbody>
+        </table>`;
+
+    } else if (page === 'search-jobs') {
+      content.innerHTML = `
+        <h4>职位搜索</h4>
+        <div class="form-inline mb-2">
+          <input class="form-control mr-2" id="searchKeyword" placeholder="请输入关键字" />
+          <button class="btn btn-primary" onclick="searchJobs()">搜索</button>
+        </div>
+        <table class="table table-bordered">
+          <thead><tr><th>职位名称</th><th>公司</th><th>地点</th><th>薪资</th></tr></thead>
+          <tbody id="searchResult"><tr><td colspan="4">请输入关键词搜索</td></tr></tbody>
+        </table>`;
+
+    } else if (page === 'company-profile') {
+      content.innerHTML = "<h4>公司信息</h4><p>公司信息查看/编辑界面...</p>";
+    }
+  }
+
+  function viewDetail(jobId) {
+    fetch(`http://localhost:9501/jobs/${jobId}`)
+            .then(res => res.json())
+            .then(job => {
+              const html = `
+        <p><strong>职位名称：</strong> ${job.title}</p>
+        <p><strong>工作地点：</strong> ${job.location}</p>
+        <p><strong>薪资：</strong> ${job.salary}</p>
+        <p><strong>职位要求：</strong> ${job.requirements || '无'}</p>
+        <p><strong>职位描述：</strong> ${job.description || '无'}</p>
+        <p><strong>发布时间：</strong> ${job.createdTime ? new Date(job.createdTime).toLocaleDateString() : '未知'}</p>
+        <p><strong>状态：</strong> ${job.status}</p>
+      `;
+              document.getElementById("jobDetailContent").innerHTML = html;
+              $('#jobDetailModal').modal('show');
+            })
+            .catch(() => {
+              document.getElementById("jobDetailContent").innerHTML = `<p class="text-danger">加载失败</p>`;
+              $('#jobDetailModal').modal('show');
+            });
+  }
+
+  function viewResumes(jobId) {
+    document.getElementById("filterJobId").value = jobId;
+    loadPage('filter-resumes');
+    setTimeout(loadApplications, 300);
+  }
+
+  function loadApplications() {
+    const jobId = document.getElementById("filterJobId").value;
+    fetch(`http://localhost:9501/jobs/job/${jobId}`)
+            .then(res => res.json())
+            .then(data => {
+              const tbody = document.getElementById("resumeTable");
+              tbody.innerHTML = '';
+              data.forEach(app => {
+                tbody.innerHTML += `<tr>
+          <td>${app.candidateId}</td>
+          <td>${app.resume}</td>
+          <td>${app.applyTime}</td>
+          <td>${app.status}</td>
+        </tr>`;
+              });
+            })
+            .catch(() => {
+              document.getElementById("resumeTable").innerHTML = '<tr><td colspan="4">加载失败</td></tr>';
+            });
+  }
+
+  function searchJobs() {
+    const keyword = document.getElementById("searchKeyword").value;
+    fetch(`http://localhost:9501/jobs/search?keyword=${keyword}`)
+            .then(res => res.json())
+            .then(data => {
+              const tbody = document.getElementById("searchResult");
+              tbody.innerHTML = '';
+              data.forEach(job => {
+                tbody.innerHTML += `<tr>
+            <td>${job.title}</td>
+            <td>${job.employerId}</td>
+            <td>${job.location}</td>
+            <td>${job.salary}</td>
+          </tr>`;
+              });
+            })
+            .catch(() => {
+              document.getElementById("searchResult").innerHTML = '<tr><td colspan="4">搜索失败</td></tr>';
+            });
+  }
+
+  function logout() {
+    alert("已退出登录");
+    window.location.href = "/index.html";
+  }
+
+
+  function deleteJob(jobId) {
+    if (!confirm("确定要删除该职位吗？")) {
+      return;
+    }
+
+    fetch(`http://localhost:9501/jobs/${jobId}`, {
+      method: 'DELETE'
+    })
+            .then(res => {
+              if (res.ok) {
+                alert("删除成功");
+                loadPage('manage-jobs');  // 重新加载职位列表
+              } else {
+                alert("删除失败");
+              }
+            })
+            .catch(() => alert("删除请求失败"));
+  }
+  $(function() {
+    // 点击编辑时加载职位数据并打开模态框
+    window.editJob = function(jobId) {
+      fetch(`http://localhost:9501/jobs/${jobId}`)
+              .then(res => res.json())
+              .then(job => {
+                $('#editJobId').val(job.id);
+                $('#editTitle').val(job.title || '');
+                $('#editLocation').val(job.location || '');
+                $('#editSalary').val(job.salary || '');
+                $('#editRequirements').val(job.requirements || '');
+                $('#editDescription').val(job.description || '');
+                $('#editJobModal').modal('show');
+              })
+              .catch(() => alert("加载职位信息失败"));
+    };
+
+    // 通过事件委托绑定表单提交事件
+    $(document).on('submit', '#editJobForm', function(e) {
+      e.preventDefault();
+
+      const updatedJob = {
+        id: $('#editJobId').val(),
+        title: $('#editTitle').val(),
+        location: $('#editLocation').val(),
+        salary: $('#editSalary').val(),
+        requirements: $('#editRequirements').val(),
+        description: $('#editDescription').val()
+      };
+
+      fetch("http://localhost:9501/jobs/update", {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedJob)
+      })
+              .then(res => res.text())
+              .then(msg => {
+                alert(msg);
+                $('#editJobModal').modal('hide');
+                loadPage('manage-jobs'); // 重新加载职位列表
+              })
+              .catch(() => alert("更新失败"));
+    });
+  });
+</script>
+
+
+<!-- 编辑职位模态框 -->
+<div class="modal fade" id="editJobModal" tabindex="-1" role="dialog" aria-labelledby="editJobModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form id="editJobForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editJobModalLabel">编辑职位</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editJobId" />
+          <div class="form-group">
+            <label>职位名称</label>
+            <input type="text" class="form-control" id="editTitle" required="required" />
+          </div>
+          <div class="form-group">
+            <label>工作地点</label>
+            <input type="text" class="form-control" id="editLocation" required="required" />
+          </div>
+          <div class="form-group">
+            <label>薪资</label>
+            <input type="text" class="form-control" id="editSalary" required="required" />
+          </div>
+          <div class="form-group">
+            <label>职位要求</label>
+            <textarea class="form-control" id="editRequirements" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>职位描述</label>
+            <textarea class="form-control" id="editDescription" rows="4"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- 职位详情模态框 -->
+<div class="modal fade" id="jobDetailModal" tabindex="-1" role="dialog" aria-labelledby="jobDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="jobDetailModalLabel">职位详情</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="jobDetailContent">
+        <p>加载中...</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

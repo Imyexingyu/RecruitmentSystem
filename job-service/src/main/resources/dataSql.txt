@@ -1,0 +1,21 @@
+CREATE TABLE job_post (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    employer_id BIGINT NOT NULL,         -- 企业用户ID
+    title VARCHAR(100) NOT NULL,
+    description TEXT,
+    location VARCHAR(100),
+    salary VARCHAR(50),
+    requirements TEXT,
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    status VARCHAR(20) DEFAULT 'OPEN'    -- OPEN, CLOSED
+);
+
+CREATE TABLE job_application (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    job_id BIGINT NOT NULL,
+    candidate_id BIGINT NOT NULL,
+    resume TEXT,                         -- 简历内容或简历文件路径
+    apply_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) DEFAULT 'PENDING' -- PENDING, ACCEPTED, REJECTED
+);
