@@ -72,7 +72,7 @@ rabbitmq:
     interview-notification: interview.notification.queue
     application-notification: application.notification.queue
   routing-key:
-    interview-notification: interview.notification.routing-key
+    interview-notification: interview.notification
     application-notification: application.notification.routing-key
 
 springdoc:

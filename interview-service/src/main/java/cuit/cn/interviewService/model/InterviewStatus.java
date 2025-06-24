@@ -5,7 +5,8 @@ public enum InterviewStatus {
     IN_PROGRESS("进行中"),
     COMPLETED("已完成"),
     CANCELLED("已取消"),
-    NO_SHOW("未到场");
+    NO_SHOW("未到场"),
+    PENDING("待处理");
 
     private final String description;
 
