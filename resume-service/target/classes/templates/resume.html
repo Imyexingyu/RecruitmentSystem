@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" ></meta>
+  <title>简历管理</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: inline-block; width: 150px; }
+    input, textarea, select { width: 300px; padding: 5px; }
+    button { padding: 10px 20px; margin-right: 10px; }
+    .error { color: red; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<h2>简历管理</h2>
+
+<!-- 创建/编辑简历表单 -->
+<form id="resumeForm" enctype="multipart/form-data">
+  <div class="form-group">
+    <label for="userId">用户 ID:</label>
+    <input type="number" id="userId" name="userId" required="required"></input>
+  </div>
+  <div class="form-group">
+    <label for="name">姓名:</label>
+    <input type="text" id="name" name="name" required="required"></input>
+  </div>
+  <div class="form-group">
+    <label for="gender">性别:</label>
+    <select id="gender" name="gender">
+      <option value="">请选择</option>
+      <option value="男">男</option>
+      <option value="女">女</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="birthDate">出生日期:</label>
+    <input type="date" id="birthDate" name="birthDate"></input>
+  </div>
+  <div class="form-group">
+    <label for="phone">电话:</label>
+    <input type="text" id="phone" name="phone"></input>
+  </div>
+  <div class="form-group">
+    <label for="email">邮箱:</label>
+    <input type="email" id="email" name="email"></input>
+  </div>
+  <div class="form-group">
+    <label for="address">地址:</label>
+    <input type="text" id="address" name="address"></input>
+  </div>
+  <div class="form-group">
+    <label for="selfIntroduction">自我介绍:</label>
+    <textarea id="selfIntroduction" name="selfIntroduction"></textarea>
+  </div>
+
+  <!-- 教育经历 -->
+  <h3>教育经历</h3>
+  <div id="educations">
+    <div class="education">
+      <div class="form-group">
+        <label>学校名称:</label>
+        <input type="text" name="educations[0].schoolName" required="required"></input>
+      </div>
+      <div class="form-group">
+        <label>专业:</label>
+        <input type="text" name="educations[0].major"></input>
+      </div>
+      <div class="form-group">
+        <label>学位:</label>
+        <input type="text" name="educations[0].degree"></input>
+      </div>
+      <div class="form-group">
+        <label>开始日期:</label>
+        <input type="date" name="educations[0].startDate"></input>
+      </div>
+      <div class="form-group">
+        <label>结束日期:</label>
+        <input type="date" name="educations[0].endDate"></input>
+      </div>
+      <div class="form-group">
+        <label>描述:</label>
+        <textarea name="educations[0].description"></textarea>
+      </div>
+    </div>
+  </div>
+  <button type="button" onclick="addEducation()">添加教育经历</button>
+
+  <!-- 附件上传 -->
+  <div class="form-group">
+    <label for="resumeFile">上传简历文件:</label>
+    <input type="file" id="resumeFile" name="file" accept=".pdf,.doc,.docx"></input>
+  </div>
+
+  <button type="button" onclick="submitResume('create')">创建简历</button>
+  <button type="button" onclick="submitResume('update')">更新简历</button>
+</form>
+
+<!-- 删除简历 -->
+<div class="form-group">
+  <label for="resumeId">简历 ID:</label>
+  <input type="number" id="resumeId" name="resumeId"></input>
+  <button type="button" onclick="deleteResume()">删除简历</button>
+</div>
+
+<!-- 错误信息 -->
+<div id="error" class="error"></div>
+
+<script>
+  let educationIndex = 1;
+
+  // 添加教育经历输入框
+  function addEducation() {
+    const educationsDiv = $("#educations");
+    const newEducation = `
+                <div class="education">
+                    <div class="form-group">
+                        <label>学校名称:</label>
+                        <input type="text" name="educations[${educationIndex}].schoolName" required="required" ></input>
+                    </div>
+                    <div class="form-group">
+                        <label>专业:</label>
+                        <input type="text" name="educations[${educationIndex}].major"></input>
+                    </div>
+                    <div class="form-group">
+                        <label>学位:</label>
+                        <input type="text" name="educations[${educationIndex}].degree"></input>
+                    </div>
+                    <div class="form-group">
+                        <label>开始日期:</label>
+                        <input type="date" name="educations[${educationIndex}].startDate"></input>
+                    </div>
+                    <div class="form-group">
+                        <label>结束日期:</label>
+                        <input type="date" name="educations[${educationIndex}].endDate"></input>
+                    </div>
+                    <div class="form-group">
+                        <label>描述:</label>
+                        <textarea name="educations[${educationIndex}].description"></textarea>
+                    </div>
+                </div>`;
+    educationsDiv.append(newEducation);
+    educationIndex++;
+  }
+
+  // 提交简历（创建或更新）
+  function submitResume(action) {
+    const form = $("#resumeForm")[0];
+    const formData = new FormData(form);
+    const jsonData = {
+      userId: $("#userId").val(),
+      name: $("#name").val(),
+      gender: $("#gender").val(),
+      birthDate: $("#birthDate").val(),
+      phone: $("#phone").val(),
+      email: $("#email").val(),
+      address: $("#address").val(),
+      selfIntroduction: $("#selfIntroduction").val(),
+      educations: []
+    };
+
+    // 收集教育经历
+    $("div.education").each(function() {
+      const education = {
+        schoolName: $(this).find("input[name$='schoolName']").val(),
+        major: $(this).find("input[name$='major']").val(),
+        degree: $(this).find("input[name$='degree']").val(),
+        startDate: $(this).find("input[name$='startDate']").val(),
+        endDate: $(this).find("input[name$='endDate']").val(),
+        description: $(this).find("textarea[name$='description']").val()
+      };
+      jsonData.educations.push(education);
+    });
+
+    const url = action === 'create' ? '/resumes' : `/resumes/${$("#resumeId").val()}`;
+    const method = action === 'create' ? 'POST' : 'PUT';
+
+    $.ajax({
+      url: url,
+      type: method,
+      contentType: 'application/json',
+      data: JSON.stringify(jsonData),
+      success: function(response) {
+        $("#error").text("操作成功，简历 ID: " + response.id);
+        if (formData.get("file").name) {
+          uploadFile(response.id);
+        }
+      },
+      error: function(xhr) {
+        $("#error").text("操作失败: " + xhr.responseText);
+      }
+    });
+  }
+
+  // 上传文件
+  function uploadFile(resumeId) {
+    const formData = new FormData();
+    formData.append("file", $("#resumeFile")[0].files[0]);
+
+    $.ajax({
+      url: `/resumes/${resumeId}/upload`,
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(response) {
+        $("#error").text(response);
+      },
+      error: function(xhr) {
+        $("#error").text("文件上传失败: " + xhr.responseText);
+      }
+    });
+  }
+
+  // 删除简历
+  function deleteResume() {
+    const resumeId = $("#resumeId").val();
+    if (!resumeId) {
+      $("#error").text("请输入简历 ID");
+      return;
+    }
+
+    $.ajax({
+      url: `/resume/${resumeId}`,
+      type: 'DELETE',
+      success: function() {
+        $("#error").text("简历删除成功");
+      },
+      error: function(xhr) {
+        $("#error").text("删除失败: " + xhr.responseText);
+      }
+    });
+  }
+</script>
+</body>
+</html>

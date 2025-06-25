@@ -16,6 +16,10 @@ public class ApplicationController {
 
     @PostMapping("/apply")
     public String apply(@RequestBody JobApplication application) {
+        List<JobApplication> existing = applicationMapper.checkDuplicate(application.getCandidateId(), application.getJobId());
+        if (existing != null) {
+            return "您已投递过该职位，请勿重复投递";
+        }
         return applicationMapper.apply(application) > 0 ? "投递成功" : "投递失败";
     }
 
@@ -23,4 +27,6 @@ public class ApplicationController {
     public List<JobApplication> getByJob(@PathVariable Long jobId) {
         return applicationMapper.findByJobId(jobId);
     }
+
+
 }

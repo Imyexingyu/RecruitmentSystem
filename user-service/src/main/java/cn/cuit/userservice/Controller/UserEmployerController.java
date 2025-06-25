@@ -14,10 +14,20 @@ public class UserEmployerController {
     @Autowired
     private UserEmployerService employerService;
 
+    @GetMapping("/companyInfo2")
+    public UserEmployer getEmployerInfo2(@RequestParam("uid") Long uid,HttpServletRequest request) {
+        if(request.getHeader("role").equals("admin")) {
+            return employerService.getByUserId(uid);
+        }else{
+            Long id = Long.valueOf((request.getHeader("user_id")));
+            return employerService.getByUserId(id);
+        }
+    }
+
     @GetMapping("/companyInfo")
     public UserEmployer getEmployerInfo(HttpServletRequest request) {
-        Long id = Long.valueOf((request.getHeader("user_id")));
-        return employerService.getByUserId(id);
+            Long id = Long.valueOf((request.getHeader("user_id")));
+            return employerService.getByUserId(id);
     }
 
     @PostMapping("/companySave")

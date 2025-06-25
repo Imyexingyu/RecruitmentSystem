@@ -55,5 +55,12 @@
             <groupId>com.netflix.zuul</groupId>
             <artifactId>zuul-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version> <!-- 使用最新稳定版本 -->
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 </project>

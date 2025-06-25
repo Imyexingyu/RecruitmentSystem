@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>编辑简历</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<h2>编辑简历</h2>
+<form id="resumeForm">
+    <input type="hidden" name="id" id="resumeId" />
+
+    <label>姓名: <input type="text" name="name" id="name"></label><br>
+    <label>性别: <input type="text" name="gender" id="gender"></label><br>
+    <label>出生日期: <input type="date" name="birth_date" id="birth_date"></label><br>
+    <label>电话: <input type="text" name="phone" id="phone"></label><br>
+    <label>邮箱: <input type="email" name="email" id="email"></label><br>
+    <label>地址: <input type="text" name="address" id="address"></label><br>
+    <label>自我介绍: <textarea id="self_introduction"></textarea></label><br>
+
+    <hr>
+    <h3>工作经历</h3>
+    <div id="work-experience-list"></div>
+    <button type="button" onclick="addWorkExperience()">添加工作经历</button>
+
+    <hr>
+    <h3>校园经历</h3>
+    <div id="campus-experience-list"></div>
+    <button type="button" onclick="addCampusExperience()">添加校园经历</button>
+
+    <hr>
+    <h3>技能证书</h3>
+    <div id="skill-certificate-list"></div>
+    <button type="button" onclick="addSkillCertificate()">添加技能证书</button>
+
+    <hr>
+    <button type="submit">保存简历</button>
+</form>
+
+<script>
+    const resumeId = new URLSearchParams(location.search).get("id");
+    $("#resumeId").val(resumeId);
+
+    // 动态添加表单字段
+    function addWorkExperience(data = {}) {
+        $("#work-experience-list").append(`
+        <div class="work-item">
+          公司名：<input type="text" name="company_name" value="${data.companyName || ''}">
+          职位：<input type="text" name="position" value="${data.position || ''}">
+          开始日期：<input type="date" name="start_date" value="${data.startDate || ''}">
+          结束日期：<input type="date" name="end_date" value="${data.endDate || ''}">
+          描述：<input type="text" name="description" value="${data.description || ''}">
+          <button type="button" onclick="$(this).parent().remove()">删除</button>
+        </div>
+      `);
+    }
+
+    function addCampusExperience(data = {}) {
+        $("#campus-experience-list").append(`
+        <div class="campus-item">
+          活动名称：<input type="text" name="activity_name" value="${data.activityName || ''}">
+          角色：<input type="text" name="role" value="${data.role || ''}">
+          开始日期：<input type="date" name="start_date" value="${data.startDate || ''}">
+          结束日期：<input type="date" name="end_date" value="${data.endDate || ''}">
+          描述：<input type="text" name="description" value="${data.description || ''}">
+          <button type="button" onclick="$(this).parent().remove()">删除</button>
+        </div>
+      `);
+    }
+
+    function addSkillCertificate(data = {}) {
+        $("#skill-certificate-list").append(`
+        <div class="skill-item">
+          技能名称：<input type="text" name="skill_name" value="${data.skillName || ''}">
+          熟练度：<input type="text" name="proficiency" value="${data.proficiency || ''}">
+          证书名称：<input type="text" name="certificate_name" value="${data.certificateName || ''}">
+          <button type="button" onclick="$(this).parent().remove()">删除</button>
+        </div>
+      `);
+    }
+
+    // 表单提交
+    $("#resumeForm").submit(function (e) {
+        e.preventDefault();
+
+        const personalInfo = {
+            id: $("#resumeId").val(),
+            name: $("#name").val(),
+            gender: $("#gender").val(),
+            birthDate: $("#birth_date").val(),
+            phone: $("#phone").val(),
+            email: $("#email").val(),
+            address: $("#address").val(),
+            selfIntroduction: $("#self_introduction").val()
+        };
+
+        const workExperienceList = [];
+        $("#work-experience-list .work-item").each(function () {
+            workExperienceList.push({
+                companyName: $(this).find("input[name='company_name']").val(),
+                position: $(this).find("input[name='position']").val(),
+                startDate: $(this).find("input[name='start_date']").val(),
+                endDate: $(this).find("input[name='end_date']").val(),
+                description: $(this).find("input[name='description']").val()
+            });
+        });
+
+        const campusExperienceList = [];
+        $("#campus-experience-list .campus-item").each(function () {
+            campusExperienceList.push({
+                activityName: $(this).find("input[name='activity_name']").val(),
+                role: $(this).find("input[name='role']").val(),
+                startDate: $(this).find("input[name='start_date']").val(),
+                endDate: $(this).find("input[name='end_date']").val(),
+                description: $(this).find("input[name='description']").val()
+            });
+        });
+
+        const skillCertificateList = [];
+        $("#skill-certificate-list .skill-item").each(function () {
+            skillCertificateList.push({
+                skillName: $(this).find("input[name='skill_name']").val(),
+                proficiency: $(this).find("input[name='proficiency']").val(),
+                certificateName: $(this).find("input[name='certificate_name']").val()
+            });
+        });
+
+        const resumeDTO = {
+            personalInfo,
+            workExperienceList,
+            campusExperienceList,
+            skillCertificateList
+        };
+
+        fetch("/resume/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(resumeDTO)
+        }).then(res => res.text()).then(msg => alert(msg));
+    });
+
+    // TODO：你可以添加自动加载已有数据（GET /api/resumes/{id}）
+    $(document).ready(function () {
+        if (resumeId) {
+            fetch(`/resume/${resumeId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const p = data.personalInfo;
+                    $("#name").val(p.name);
+                    $("#gender").val(p.gender);
+                    $("#birth_date").val(p.birthDate);
+                    $("#phone").val(p.phone);
+                    $("#email").val(p.email);
+                    $("#address").val(p.address);
+                    $("#self_introduction").val(p.selfIntroduction);
+
+                    data.workExperienceList.forEach(w => addWorkExperience(w));
+                    data.campusExperienceList.forEach(c => addCampusExperience(c));
+                    data.skillCertificateList.forEach(s => addSkillCertificate(s));
+                });
+        }
+    });
+
+</script>
+</body>
+</html>

@@ -11,9 +11,10 @@ public class JwtUtil {
     private final long expire = 1000 * 60 * 60 * 2; // 2小时
 
 
-    public String generateToken(Long id, String username, String role) {
+    public String generateToken(String s,Long id, String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("sid", s)
                 .claim("id", id)
                 .claim("role", role)
                 .setIssuedAt(new Date())

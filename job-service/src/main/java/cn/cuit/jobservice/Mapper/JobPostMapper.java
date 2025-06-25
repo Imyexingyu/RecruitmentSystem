@@ -31,5 +31,15 @@ public interface JobPostMapper {
             "updated_time = #{updatedTime} " +
             "WHERE id = #{id}")
     int update(JobPost post);
+
+    @Select("SELECT * FROM job_post WHERE status = 'OPEN'")
+    List<JobPost> findAllOpenJobs();
+    @Select("SELECT COUNT(*) FROM job_post")
+    int countAll();
+
+    @Select("SELECT COUNT(*) FROM job_post WHERE status = #{status}")
+    int countByStatus(@Param("status") String status);
+
+
 }
 

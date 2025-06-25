@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>简历管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            min-height: 100vh;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid #007bff;
+            padding-left: 10px;
+        }
+        .close {
+            float: right;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: red;
+            cursor: pointer;
+        }
+        .resume-buttons {
+            margin-bottom: 20px;
+        }
+        .resume-buttons .btn {
+            margin-right: 10px;
+            transition: all 0.3s ease-in-out;
+        }
+        .resume-buttons .btn:hover {
+            transform: scale(1.05);
+            background-color: #007bff;
+            color: white;
+        }
+        .resume-section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        .resume-section:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        .form-control, .form-group textarea {
+            border-radius: 0.375rem;
+        }
+        .btn-primary, .btn-danger, .btn-secondary {
+            transition: all 0.3s ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-secondary:hover {
+            background-color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <h3 class="mb-4">简历管理</h3>
+    <div class="resume-buttons">
+        <a class="btn btn-outline-secondary" href="http://localhost:9501/user/home">回到首页</a>
+    </div>
+
+    <div class="resume-section">
+        <h5 class="section-title">上传头像</h5>
+        <form id="avatarUploadForm">
+            <div class="form-group">
+                <input type="file" class="form-control-file" id="avatarFile" required />
+            </div>
+            <button type="submit" class="btn btn-primary">上传头像</button>
+        </form>
+        <img id="avatarPreview" src="" alt="头像预览" class="mt-3 rounded" style="max-width:150px; display:none;" />
+    </div>
+
+    <div class="resume-section">
+        <h5 class="section-title">上传简历原件</h5>
+        <form id="resumeFileForm">
+            <div class="form-group">
+                <input type="file" class="form-control-file" id="resumeFile" required />
+            </div>
+            <button type="submit" class="btn btn-primary">上传简历文件</button>
+        </form>
+        <div id="resumeFileLink" class="mt-3" style="display:none;"></div>
+    </div>
+
+    <div id="resumeView" style="display:none;"></div>
+    <div id="resumeForm" style="display:none;"></div>
+    <div id="msg" class="mt-3"></div>
+</div>
+
+<script>
+    const apiBase = 'http://localhost:9501/resume';
+    let currentResume = null;
+
+    $(document).ready(() => {
+        loadResume();
+
+        // 上传头像表单提交事件
+        $('#avatarUploadForm').submit(function (e) {
+            e.preventDefault();
+            const file = $('#avatarFile')[0].files[0];
+            if (!file) return;
+            if (!currentResume?.id) return alert('请先保存简历信息');
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch(`${apiBase}/${currentResume.id}/upload-avatar`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        const url = `http://localhost:9501/uploads/${res.data}`;
+                        $('#avatarPreview').attr('src', url).show();
+                    } else {
+                        alert(res.message || '上传失败');
+                    }
+                })
+                .catch(() => alert('上传失败'));
+        });
+
+        // 上传简历文件表单提交事件
+        $('#resumeFileForm').submit(function (e) {
+            e.preventDefault();
+            const file = $('#resumeFile')[0].files[0];
+            if (!file) return;
+            if (!currentResume?.id) return alert('请先保存简历信息');
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch(`${apiBase}/${currentResume.id}/upload`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        console.log(res.data);
+                        const url = `http://localhost:9501/${res.data}`;
+                        $('#resumeFileLink').html(`<a href="${url}" target="_blank">查看已上传简历</a>`).show();
+                    } else {
+                        alert(res.message || '上传失败');
+                    }
+                })
+                .catch(() => alert('上传失败'));
+        });
+    });
+
+    function loadResume() {
+        fetch(`${apiBase}/my`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.code === 200 && res.data) {
+                    currentResume = res.data;
+                    console.log(res.data);
+                    console.log(res.avatarPath);
+                    console.log(currentResume);
+                    console.log(currentResume.avatarPath);
+                    if (currentResume.avatarPath) {
+                        const avatarUrl = `http://localhost:9501/${currentResume.avatarPath}`;
+                        $('#avatarPreview').attr('src', avatarUrl).show();
+                    }
+                    renderView(currentResume);
+                } else {
+                    renderEditForm();
+                }
+            })
+            .catch(() => {
+                $('#msg').text('加载简历失败').css('color', 'red');
+                renderEditForm();
+            });
+    }
+
+    function renderView(data) {
+        const section = $('#resumeView');
+        section.empty().show();
+        $('#resumeForm').hide();
+        $('#msg').text('');
+
+        section.append(`
+            <button class="btn btn-primary mb-3" onclick="renderEditForm()">编辑简历</button>
+            <button class="btn btn-danger mb-3" onclick="deleteResume()">删除简历</button>
+            <h5>基本信息</h5>
+            <p><b>姓名：</b>${data.name || ''}</p>
+            <p><b>性别：</b>${data.gender || ''}</p>
+            <p><b>出生日期：</b>${data.birthDate || ''}</p>
+            <p><b>电话：</b>${data.phone || ''}</p>
+            <p><b>邮箱：</b>${data.email || ''}</p>
+            <p><b>地址：</b>${data.address || ''}</p>
+            <p><b>自我介绍：</b><br/>${data.selfIntroduction || ''}</p>
+        `);
+
+        const renderList = (title, items, formatItem) => {
+            section.append(`<h5 class="section-title">${title}</h5>`);
+            if (!items || items.length === 0) {
+                section.append('<p><i>暂无数据</i></p>');
+            } else {
+                items.forEach(item => {
+                    section.append(`<div class="border p-2 mb-2">${formatItem(item)}</div>`);
+                });
+            }
+        };
+
+        renderList('教育经历', data.educations, ed => `
+            <b>${ed.schoolName || ''}</b> - ${ed.major || ''} (${ed.degree || ''})<br/>
+            ${ed.startDate || ''} 至 ${ed.endDate || ''}<br/>
+            ${ed.description || ''}
+        `);
+
+        renderList('工作经历', data.workExperiences, wk => `
+            <b>${wk.companyName || ''}</b> - ${wk.position || ''}<br/>
+            ${wk.startDate || ''} 至 ${wk.endDate || ''}<br/>
+            ${wk.description || ''}
+        `);
+
+        renderList('校园经历', data.campusExperiences, ca => `
+            <b>${ca.activityName || ''}</b> - ${ca.role || ''}<br/>
+            ${ca.startDate || ''} 至 ${ca.endDate || ''}<br/>
+            ${ca.description || ''}
+        `);
+
+        renderList('技能证书', data.skillCertificates, sc => `
+            <b>${sc.skillName || ''}</b>（${sc.proficiency || ''}）<br/>
+            证书：${sc.certificateName || ''}
+        `);
+    }
+
+    function renderEditForm() {
+        const form = $('#resumeForm');
+        form.empty().show();
+        $('#resumeView').hide();
+        $('#msg').text('');
+
+        const field = (label, id, type = 'text') => `
+            <div class="form-group">
+                <label>${label}</label>
+                <input type="${type}" class="form-control" id="${id}" value="${currentResume?.[id] || ''}" required />
+            </div>`;
+
+        const textarea = (label, id) => `
+            <div class="form-group">
+                <label>${label}</label>
+                <textarea class="form-control" id="${id}">${currentResume?.[id] || ''}</textarea>
+            </div>`;
+
+        form.append(`
+            <form id="editResumeForm">
+                ${field('姓名', 'name')}
+                ${field('性别', 'gender')}
+                ${field('出生日期', 'birthDate', 'date')}
+                ${field('电话', 'phone')}
+                ${field('邮箱', 'email')}
+                ${field('地址', 'address')}
+                ${textarea('自我介绍', 'selfIntroduction')}
+
+                <h5 class="section-title">教育经历</h5>
+                <div id="educationsList"></div>
+                <button class="btn btn-sm btn-success mb-3" type="button" onclick="addEducation()">新增教育经历</button>
+
+                <h5 class="section-title">工作经历</h5>
+                <div id="workExperiencesList"></div>
+                <button class="btn btn-sm btn-success mb-3" type="button" onclick="addWorkExperience()">新增工作经历</button>
+
+                <h5 class="section-title">校园经历</h5>
+                <div id="campusExperiencesList"></div>
+                <button class="btn btn-sm btn-success mb-3" type="button" onclick="addCampusExperience()">新增校园经历</button>
+
+                <h5 class="section-title">技能证书</h5>
+                <div id="skillCertificatesList"></div>
+                <button class="btn btn-sm btn-success mb-3" type="button" onclick="addSkillCertificate()">新增技能证书</button>
+
+                <button type="submit" class="btn btn-primary mt-3">保存简历</button>
+                <button type="button" class="btn btn-secondary mt-3" onclick="renderView(currentResume)">取消</button>
+            </form>
+        `);
+
+        renderList('educationsList', currentResume?.educations || [], educationTemplate);
+        renderList('workExperiencesList', currentResume?.workExperiences || [], workExperienceTemplate);
+        renderList('campusExperiencesList', currentResume?.campusExperiences || [], campusExperienceTemplate);
+        renderList('skillCertificatesList', currentResume?.skillCertificates || [], skillCertificateTemplate);
+
+        $('#editResumeForm').submit(handleSubmit);
+    }
+
+    function renderList(id, items, templateFunc) {
+        const container = $(`#${id}`);
+        container.empty();
+        items.forEach((item, index) => {
+            container.append(templateFunc(item, index));
+        });
+    }
+
+    const educationTemplate = (ed = {}, idx = 0) => `
+        <div class="border p-2 mb-2">
+            <span class="close" onclick="this.parentElement.remove()">×</span>
+            <input class="form-control mb-1" name="schoolName" placeholder="学校名称" value="${ed.schoolName || ''}" />
+            <input class="form-control mb-1" name="major" placeholder="专业" value="${ed.major || ''}" />
+            <input class="form-control mb-1" name="degree" placeholder="学历" value="${ed.degree || ''}" />
+            <input class="form-control mb-1" name="startDate" type="date" value="${ed.startDate || ''}" />
+            <input class="form-control mb-1" name="endDate" type="date" value="${ed.endDate || ''}" />
+            <textarea class="form-control" name="description" placeholder="描述">${ed.description || ''}</textarea>
+        </div>`;
+
+    const workExperienceTemplate = (wk = {}, idx = 0) => `
+        <div class="border p-2 mb-2">
+            <span class="close" onclick="this.parentElement.remove()">×</span>
+            <input class="form-control mb-1" name="companyName" placeholder="公司名称" value="${wk.companyName || ''}" />
+            <input class="form-control mb-1" name="position" placeholder="职位" value="${wk.position || ''}" />
+            <input class="form-control mb-1" name="startDate" type="date" value="${wk.startDate || ''}" />
+            <input class="form-control mb-1" name="endDate" type="date" value="${wk.endDate || ''}" />
+            <textarea class="form-control" name="description" placeholder="描述">${wk.description || ''}</textarea>
+        </div>`;
+
+    const campusExperienceTemplate = (ca = {}, idx = 0) => `
+        <div class="border p-2 mb-2">
+            <span class="close" onclick="this.parentElement.remove()">×</span>
+            <input class="form-control mb-1" name="activityName" placeholder="活动名称" value="${ca.activityName || ''}" />
+            <input class="form-control mb-1" name="role" placeholder="角色" value="${ca.role || ''}" />
+            <input class="form-control mb-1" name="startDate" type="date" value="${ca.startDate || ''}" />
+            <input class="form-control mb-1" name="endDate" type="date" value="${ca.endDate || ''}" />
+            <textarea class="form-control" name="description" placeholder="描述">${ca.description || ''}</textarea>
+        </div>`;
+
+    const skillCertificateTemplate = (sc = {}, idx = 0) => `
+        <div class="border p-2 mb-2">
+            <span class="close" onclick="this.parentElement.remove()">×</span>
+            <input class="form-control mb-1" name="skillName" placeholder="技能名称" value="${sc.skillName || ''}" />
+            <input class="form-control mb-1" name="proficiency" placeholder="熟练程度" value="${sc.proficiency || ''}" />
+            <input class="form-control mb-1" name="certificateName" placeholder="证书名称" value="${sc.certificateName || ''}" />
+        </div>`;
+
+    function collectSectionData(containerId, fieldNames) {
+        const items = [];
+        $(`#${containerId} > div`).each(function () {
+            const item = {};
+            fieldNames.forEach(field => {
+                item[field] = $(this).find(`[name=${field}]`).val() || '';
+            });
+            items.push(item);
+        });
+        return items;
+    }
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        const data = {
+            userId: currentResume?.userId || 2,
+            name: $('#name').val(),
+            gender: $('#gender').val(),
+            birthDate: $('#birthDate').val(),
+            phone: $('#phone').val(),
+            email: $('#email').val(),
+            address: $('#address').val(),
+            selfIntroduction: $('#selfIntroduction').val(),
+            educations: collectSectionData('educationsList', ['schoolName', 'major', 'degree', 'startDate', 'endDate', 'description']),
+            workExperiences: collectSectionData('workExperiencesList', ['companyName', 'position', 'startDate', 'endDate', 'description']),
+            campusExperiences: collectSectionData('campusExperiencesList', ['activityName', 'role', 'startDate', 'endDate', 'description']),
+            skillCertificates: collectSectionData('skillCertificatesList', ['skillName', 'proficiency', 'certificateName'])
+        };
+        const method = currentResume?.id ? 'PUT' : 'POST';
+        const url = currentResume?.id ? `${apiBase}/${currentResume.id}` : apiBase;
+        fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(res => res.json())
+            .then(res => {
+                if (res.code === 200) {
+                    currentResume = res.data || data;
+                    $('#msg').text('保存成功').css('color', 'green');
+                    renderView(currentResume);
+                } else {
+                    $('#msg').text(res.message || '保存失败').css('color', 'red');
+                }
+            })
+            .catch(() => {
+                $('#msg').text('保存失败，网络错误').css('color', 'red');
+            });
+    }
+
+    function addEducation() {
+        $('#educationsList').append(educationTemplate());
+    }
+    function addWorkExperience() {
+        $('#workExperiencesList').append(workExperienceTemplate());
+    }
+    function addCampusExperience() {
+        $('#campusExperiencesList').append(campusExperienceTemplate());
+    }
+    function addSkillCertificate() {
+        $('#skillCertificatesList').append(skillCertificateTemplate());
+    }
+
+    function deleteResume() {
+        if (!currentResume?.id) return alert('无简历可删除');
+        if (!confirm('确认删除简历吗？')) return;
+        fetch(`${apiBase}/${currentResume.id}`, { method: 'DELETE' })
+            .then(() => {
+                alert('删除成功');
+                currentResume = null;
+                renderEditForm();
+            })
+            .catch(() => alert('删除失败'));
+    }
+</script>
+</body>
+</html>

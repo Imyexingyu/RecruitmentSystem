@@ -9,6 +9,7 @@ public class UserEmployer {
     private Long id;
     private Long user_id;
     private String companyName;
+    private String company_name;
     private String address;
     private String industry;
     private String introduction;

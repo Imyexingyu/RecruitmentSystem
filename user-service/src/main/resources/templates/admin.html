@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>管理员后台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body { height: 100vh; margin: 0; }
+        .sidebar {
+            height: calc(100vh - 56px);
+            background-color: #f8f9fa;
+            padding-top: 1rem;
+            border-right: 1px solid #dee2e6;
+        }
+        .sidebar a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .sidebar a:hover {
+            background-color: #e2e6ea;
+        }
+        .main-content {
+            padding: 20px;
+            background-color: #fff;
+            min-height: calc(100vh - 56px);
+        }
+        .refresh-btn {
+            float: right;
+        }
+        .chart-container {
+            margin-top: 20px;
+        }
+        .table th, .table td {
+            vertical-align: middle !important;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <a class="navbar-brand" href="#">招聘系统后台管理</a>
+    <div class="ml-auto">
+        <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-toggle="dropdown">
+                    <span th:text="${username}">管理员</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="#" onclick="logout()">退出登录</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar">
+            <a href="javascript:void(0)" onclick="loadPage('dashboard')">系统概览</a>
+            <a href="javascript:void(0)" onclick="loadPage('user-manage')">用户管理</a>
+            <a href="javascript:void(0)" onclick="loadPage('job-manage')">职位管理</a>
+        </div>
+        <div class="col-md-10 main-content" id="mainContent">
+            <h4>欢迎来到后台管理系统，请选择左侧功能。</h4>
+        </div>
+    </div>
+</div>
+
+<script>
+    function logout() {
+        alert("已退出登录");
+        window.location.href = "/index.html";
+    }
+
+    function loadPage(page) {
+        const content = document.getElementById("mainContent");
+
+        if (page === 'dashboard') {
+            content.innerHTML = `
+                <h4>系统概览</h4>
+                <button class="btn btn-sm btn-primary refresh-btn" onclick="refreshAllStatistics()">刷新统计</button>
+                <div class="chart-container">
+                    <div id="jobStatsChart" style="height: 400px;"></div>
+                    <div id="userStatsChart" style="height: 400px;"></div>
+                </div>
+            `;
+            loadJobStatisticsChart();
+            loadUserStatisticsChart();
+        } else if (page === 'user-manage') {
+            content.innerHTML = `
+                <h4>用户管理</h4>
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>角色</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr><td colspan="5">加载中...</td></tr>
+                    </tbody>
+                </table>
+            `;
+            loadUsers();
+        } else if (page === 'job-manage') {
+            content.innerHTML = `
+                <h4>职位管理</h4>
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>职位名称</th>
+                            <th>公司</th>
+                            <th>地点</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jobTableBody">
+                        <tr><td colspan="6">加载中...</td></tr>
+                    </tbody>
+                </table>
+            `;
+            loadJobs();
+        }
+    }
+
+    function refreshAllStatistics() {
+        fetch("http://localhost:9501/admin/statistics/jobs", { method: "POST" });
+        fetch("http://localhost:9501/admin/statistics/users/refresh", { method: "POST" });
+        setTimeout(() => {
+            loadJobStatisticsChart();
+            loadUserStatisticsChart();
+        }, 500);
+    }
+
+    function loadJobStatisticsChart() {
+        const chartDom = document.getElementById('jobStatsChart');
+        const myChart = echarts.init(chartDom);
+        fetch("http://localhost:9501/admin/statistics/jobs")
+            .then(res => res.json())
+            .then(data => {
+                myChart.setOption({
+                    title: { text: '职位统计', left: 'center' },
+                    tooltip: { trigger: 'item' },
+                    legend: { top: 'bottom' },
+                    series: [{
+                        name: '职位状态',
+                        type: 'pie',
+                        radius: '60%',
+                        data: [
+                            { value: data.activeJobs, name: '进行中职位' },
+                            { value: data.closedJobs, name: '已关闭职位' }
+                        ]
+                    }]
+                });
+            });
+    }
+
+    function loadUserStatisticsChart() {
+        const chartDom = document.getElementById('userStatsChart');
+        const myChart = echarts.init(chartDom);
+        fetch("http://localhost:9501/admin/statistics/users")
+            .then(res => res.json())
+            .then(data => {
+                myChart.setOption({
+                    title: { text: '用户统计', left: 'center' },
+                    tooltip: { trigger: 'item' },
+                    legend: { top: 'bottom' },
+                    series: [{
+                        name: '用户角色',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        data: [
+                            { value: data.totalUsers, name: '总用户' },
+                            { value: data.candidateUsers, name: '求职者' },
+                            { value: data.employerUsers, name: '企业用户' },
+                            { value: data.blockedUsers, name: '封禁用户' }
+                        ]
+                    }]
+                });
+            });
+    }
+
+    function loadUsers() {
+        fetch("http://localhost:9501/auth/allUser")
+            .then(res => res.json())
+            .then(users => {
+                const tbody = document.getElementById("userTableBody");
+                if (!Array.isArray(users) || users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">暂无用户数据</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.role}</td>
+                        <td>${user.status}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning mr-1" onclick="blockUser(${user.id})">封禁</button>
+                            <button class="btn btn-sm btn-success mr-1" onclick="unblockUser(${user.id})">解封</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">删除</button>
+                        </td>
+                    </tr>
+                `).join('');
+            });
+    }
+
+    function blockUser(id) {
+        fetch(`http://localhost:9501/admin/users/${id}/block`, { method: 'POST' })
+            .then(() => loadUsers())
+            .catch(() => alert("封禁失败"));
+    }
+
+    function unblockUser(id) {
+        fetch(`http://localhost:9501/admin/users/${id}/unblock`, { method: 'POST' })
+            .then(() => loadUsers())
+            .catch(() => alert("解封失败"));
+    }
+
+    function deleteUser(id) {
+        if (!confirm("确认删除该用户？")) return;
+        fetch(`http://localhost:9501/admin/users/${id}`, { method: 'DELETE' })
+            .then(() => loadUsers())
+            .catch(() => alert("删除失败"));
+    }
+
+    function loadJobs() {
+        const jobsUrl = "http://localhost:9501/jobs/all";
+        fetch(jobsUrl)
+            .then(res => res.json())
+            .then(jobs => {
+                const tbody = document.getElementById("jobTableBody");
+
+                if (!Array.isArray(jobs) || jobs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6">暂无职位数据</td></tr>';
+                    return;
+                }
+
+                // 用 Promise.all 批量请求每个 job 的公司信息
+                const jobRowsPromises = jobs.map(job => {
+                    const companyUserId = job.employerId;
+
+                    return fetch(`http://localhost:9501/user/companyInfo2?uid=${companyUserId}`)
+                        .then(res => res.json())
+                        .then(companyInfo => {
+                            const companyName = companyInfo.company_name || '未知公司';
+
+                            return `
+                            <tr>
+                                <td>${job.id}</td>
+                                <td>${job.title || '无标题'}</td>
+                                <td>${companyName}</td>
+                                <td>${job.location || '-'}</td>
+                                <td>${job.status || '-'}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteJob(${job.id})">删除</button>
+                                </td>
+                            </tr>
+                        `;
+                        })
+                        .catch(() => {
+                            return `
+                            <tr>
+                                <td>${job.id}</td>
+                                <td>${job.title || '无标题'}</td>
+                                <td style="color:red;">公司信息加载失败</td>
+                                <td>${job.location || '-'}</td>
+                                <td>${job.status || '-'}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteJob(${job.id})">删除</button>
+                                </td>
+                            </tr>
+                        `;
+                        });
+                });
+
+                Promise.all(jobRowsPromises)
+                    .then(rows => {
+                        tbody.innerHTML = rows.join('');
+                    });
+            })
+            .catch(() => {
+                document.getElementById("jobTableBody").innerHTML = '<tr><td colspan="6">加载失败</td></tr>';
+            });
+    }
+
+
+    function deleteJob(id) {
+        if (!confirm("确定要删除该职位吗？")) return;
+        fetch(`http://localhost:9501/admin/jobs/${id}`, { method: 'DELETE' })
+            .then(() => loadJobs())
+            .catch(() => alert("删除失败"));
+    }
+
+</script>
+
+</body>
+</html>

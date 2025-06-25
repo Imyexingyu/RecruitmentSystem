@@ -88,7 +88,14 @@ public class AuthController {
             return result;
         }
 
-        String token = jwtUtil.generateToken(user.getId(),user.getUsername(), user.getRole());
+        if ("BLOCKED".equalsIgnoreCase(user.getStatus())) {
+            result.put("code", 403);
+            result.put("msg", "该用户已被封禁，无法登录");
+            return result;
+        }
+
+
+        String token = jwtUtil.generateToken("s",user.getId(),user.getUsername(), user.getRole());
         System.out.println(token);
         redisTemplate.opsForValue().set("TOKEN:" + token, "1", 2, TimeUnit.HOURS);
 
@@ -101,6 +108,7 @@ public class AuthController {
 
         result.put("code", 200);
         result.put("msg", "登录成功");
+        result.put("id", user.getId());
         result.put("role", user.getRole());
         return result;
     }

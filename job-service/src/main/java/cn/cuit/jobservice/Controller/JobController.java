@@ -5,7 +5,9 @@ import cn.cuit.jobservice.Service.JobService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/jobs")
@@ -27,8 +29,12 @@ public class JobController {
     }
 
     @DeleteMapping("/{id}")
-    public String deleteJob(@PathVariable Long id) {
-        return jobService.deleteById(id) > 0 ? "删除成功" : "删除失败";
+    public Map<String, Object> deleteJob(@PathVariable Long id) {
+        boolean success = jobService.deleteById(id) > 0;
+        Map<String, Object> result = new HashMap<>();
+        result.put("code", success ? 200 : 500);
+        result.put("msg", success ? "删除成功" : "删除失败");
+        return result;
     }
 
     @GetMapping("/{id}")
@@ -45,5 +51,15 @@ public class JobController {
     @GetMapping("/search")
     public List<JobPost> search(@RequestParam String keyword) {
         return jobService.searchJobs(keyword);
+    }
+
+    @GetMapping("/all")
+    public List<JobPost> listAllOpenJobs() {
+        return jobService.getAllOpenJobs();
+    }
+
+    @GetMapping("/statistics")
+    public Map<String, Object> getJobStatistics() {
+        return jobService.getJobStatistics();
     }
 }

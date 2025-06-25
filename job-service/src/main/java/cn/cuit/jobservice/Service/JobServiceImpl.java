@@ -1,6 +1,7 @@
 package cn.cuit.jobservice.Service;
 
 import cn.cuit.jobservice.Entity.JobPost;
+import cn.cuit.jobservice.Mapper.JobApplicationMapper;
 import cn.cuit.jobservice.Mapper.JobPostMapper;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,12 +9,16 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class JobServiceImpl implements JobService {
     @Autowired
     private JobPostMapper jobPostMapper;
+    @Autowired
+    private JobApplicationMapper applicationMapper;
 
     public int publish(JobPost post) {
         return jobPostMapper.insert(post);
@@ -38,6 +43,38 @@ public class JobServiceImpl implements JobService {
     public int update(JobPost post) {
         post.setUpdatedTime(new Date()); // 更新时间
         return jobPostMapper.update(post);
+    }
+
+
+    @Override
+    public List<JobPost> getAllOpenJobs() {
+        return jobPostMapper.findAllOpenJobs();
+    }
+
+    @Override
+    public JobPost getJobDetail(Long jobId) {
+        return jobPostMapper.findById(jobId);
+    }
+
+    public Map<String, Object> getJobStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalJobs", jobPostMapper.countAll());
+        stats.put("activeJobs", jobPostMapper.countByStatus("OPEN"));
+        stats.put("closedJobs", jobPostMapper.countByStatus("CLOSED"));
+        stats.put("totalApplications", applicationMapper.countAll());
+        stats.put("pendingApplications", applicationMapper.countByStatus("PENDING"));
+        stats.put("acceptedApplications", applicationMapper.countByStatus("ACCEPTED"));
+        stats.put("rejectedApplications", applicationMapper.countByStatus("REJECTED"));
+        return stats;
+    }
+
+    @Override
+    public Map<String, Object> deleteJob(Long jobId) {
+        int rows = jobPostMapper.deleteById(jobId);
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", rows > 0);
+        result.put("message", rows > 0 ? "删除成功" : "删除失败或不存在");
+        return result;
     }
 }
 

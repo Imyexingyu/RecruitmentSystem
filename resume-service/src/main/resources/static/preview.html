@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+<script>
+    const resumeId = new URLSearchParams(location.search).get("id");
+
+    fetch(`/resume/${resumeId}/preview`)
+        .then(res => res.json())
+        .then(data => {
+            const p = data.personalInfo;
+            $("#name").text(p.name);
+            $("#gender").text(p.gender);
+            $("#phone").text(p.phone);
+            // 类似展示
+            data.educationList.forEach(e => {
+                $("#education").append(`<li>${e.schoolName} - ${e.degree}</li>`);
+            });
+            // 工作、校园、技能同理
+        });
+
+</script>
+</html>
