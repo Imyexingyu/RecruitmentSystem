@@ -1,1 +1,117 @@
-# 配置文件
+server:
+  port: 8084
+
+spring:
+  application:
+    name: interview-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/recruitmentSystem_interview?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: "041020"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    generate-ddl: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    enabled: true
+    connection-timeout: 5000
+    requested-heartbeat: 30
+    cache:
+      channel:
+        size: 25
+        checkout-timeout: 10000
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    listener:
+      simple:
+        acknowledge-mode: auto
+        prefetch: 1
+        concurrency: 1
+        max-concurrency: 5
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-interval: 10000
+          multiplier: 2.0
+          max-attempts: 3
+        default-requeue-rejected: true
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-interval: 10000
+        multiplier: 2.0
+        max-attempts: 3
+      mandatory: true
+      receive-timeout: 5000
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    cuit.cn.interviewService: DEBUG
+    cuit.cn.interviewService.service.impl.InterviewServiceImpl: DEBUG
+    cuit.cn.interviewService.feign: DEBUG
+  file:
+    name: ./logs/interview-service.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://admin:123456@localhost:7001/eureka
+    enabled: true
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+rabbitmq:
+  exchange:
+    interview: interview.exchange
+  queue:
+    interview-notification: interview.notification.queue
+  routing-key:
+    interview-notification: interview.notification.routing-key
+
+springdoc:
+  api-docs:
+    enabled: false
+    path: /api-docs
+  swagger-ui:
+    enabled: false
+    path: /swagger-ui.html
+
+feign:
+  hystrix:
+    enabled: true
+    
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000
+            
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: false
+    enabled: false 
