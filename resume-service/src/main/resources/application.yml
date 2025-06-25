@@ -1,1 +1,31 @@
 # 配置文件
+spring:
+  application:
+    name: resume-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/resume_db?useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+mybatis:
+  type-aliases-package: cn.cuit.interview.service.Entity
+  configuration:
+    map-underscore-to-camel-case: true
+server:
+  port: 8080
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://admin:123456@localhost:7001/eureka
+      instance:
+        instance-id: resume-8081.com
