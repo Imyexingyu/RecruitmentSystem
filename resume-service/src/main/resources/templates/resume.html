@@ -2,7 +2,7 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-  <meta charset="UTF-8" ></meta>
+  <meta charset="UTF-8" />
   <title>简历管理</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
@@ -24,11 +24,11 @@
 <form id="resumeForm" enctype="multipart/form-data">
   <div class="form-group">
     <label for="userId">用户 ID:</label>
-    <input type="number" id="userId" name="userId" required="required"></input>
+    <input type="number" id="userId" name="userId" required="required" />
   </div>
   <div class="form-group">
     <label for="name">姓名:</label>
-    <input type="text" id="name" name="name" required="required"></input>
+    <input type="text" id="name" name="name" required="required" />
   </div>
   <div class="form-group">
     <label for="gender">性别:</label>
@@ -40,19 +40,19 @@
   </div>
   <div class="form-group">
     <label for="birthDate">出生日期:</label>
-    <input type="date" id="birthDate" name="birthDate"></input>
+    <input type="date" id="birthDate" name="birthDate" />
   </div>
   <div class="form-group">
     <label for="phone">电话:</label>
-    <input type="text" id="phone" name="phone"></input>
+    <input type="text" id="phone" name="phone" />
   </div>
   <div class="form-group">
     <label for="email">邮箱:</label>
-    <input type="email" id="email" name="email"></input>
+    <input type="email" id="email" name="email" />
   </div>
   <div class="form-group">
     <label for="address">地址:</label>
-    <input type="text" id="address" name="address"></input>
+    <input type="text" id="address" name="address" />
   </div>
   <div class="form-group">
     <label for="selfIntroduction">自我介绍:</label>
@@ -65,23 +65,23 @@
     <div class="education">
       <div class="form-group">
         <label>学校名称:</label>
-        <input type="text" name="educations[0].schoolName" required="required"></input>
+        <input type="text" name="educations[0].schoolName" required="required" />
       </div>
       <div class="form-group">
         <label>专业:</label>
-        <input type="text" name="educations[0].major"></input>
+        <input type="text" name="educations[0].major" />
       </div>
       <div class="form-group">
         <label>学位:</label>
-        <input type="text" name="educations[0].degree"></input>
+        <input type="text" name="educations[0].degree" />
       </div>
       <div class="form-group">
         <label>开始日期:</label>
-        <input type="date" name="educations[0].startDate"></input>
+        <input type="date" name="educations[0].startDate" />
       </div>
       <div class="form-group">
         <label>结束日期:</label>
-        <input type="date" name="educations[0].endDate"></input>
+        <input type="date" name="educations[0].endDate" />
       </div>
       <div class="form-group">
         <label>描述:</label>
@@ -94,7 +94,7 @@
   <!-- 附件上传 -->
   <div class="form-group">
     <label for="resumeFile">上传简历文件:</label>
-    <input type="file" id="resumeFile" name="file" accept=".pdf,.doc,.docx"></input>
+    <input type="file" id="resumeFile" name="file" accept=".pdf,.doc,.docx" />
   </div>
 
   <button type="button" onclick="submitResume('create')">创建简历</button>
@@ -104,7 +104,7 @@
 <!-- 删除简历 -->
 <div class="form-group">
   <label for="resumeId">简历 ID:</label>
-  <input type="number" id="resumeId" name="resumeId"></input>
+  <input type="number" id="resumeId" name="resumeId" />
   <button type="button" onclick="deleteResume()">删除简历</button>
 </div>
 
@@ -121,23 +121,23 @@
                 <div class="education">
                     <div class="form-group">
                         <label>学校名称:</label>
-                        <input type="text" name="educations[${educationIndex}].schoolName" required="required" ></input>
+                        <input type="text" name="educations[${educationIndex}].schoolName" required="required" />
                     </div>
                     <div class="form-group">
                         <label>专业:</label>
-                        <input type="text" name="educations[${educationIndex}].major"></input>
+                        <input type="text" name="educations[${educationIndex}].major" />
                     </div>
                     <div class="form-group">
                         <label>学位:</label>
-                        <input type="text" name="educations[${educationIndex}].degree"></input>
+                        <input type="text" name="educations[${educationIndex}].degree" />
                     </div>
                     <div class="form-group">
                         <label>开始日期:</label>
-                        <input type="date" name="educations[${educationIndex}].startDate"></input>
+                        <input type="date" name="educations[${educationIndex}].startDate" />
                     </div>
                     <div class="form-group">
                         <label>结束日期:</label>
-                        <input type="date" name="educations[${educationIndex}].endDate"></input>
+                        <input type="date" name="educations[${educationIndex}].endDate" />
                     </div>
                     <div class="form-group">
                         <label>描述:</label>

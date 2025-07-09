@@ -1,31 +1,39 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8"></meta>
+  <meta charset="UTF-8" />
   <title>企业用户中心</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
   <style>
-    body { height: 100vh; margin: 0; }
+    body { height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
     .sidebar {
       height: calc(100vh - 56px);
       background-color: #f8f9fa;
       padding-top: 1rem;
       border-right: 1px solid #dee2e6;
+      border-top-left-radius: 16px;
+      border-bottom-left-radius: 16px;
+      box-shadow: 2px 0 12px rgba(102,126,234,0.07);
     }
     .sidebar a {
       display: block;
-      padding: 10px 15px;
+      padding: 12px 18px;
       color: #333;
       text-decoration: none;
       cursor: pointer;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-weight: 500;
+      transition: background 0.2s, color 0.2s;
     }
-    .sidebar a:hover {
-      background-color: #e2e6ea;
+    .sidebar a:hover, .sidebar a.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
     }
-    .main-content { padding: 20px; }
+    .main-content { padding: 28px 18px; background-color: #fff; min-height: calc(100vh - 56px); border-radius: 0 16px 16px 0; box-shadow: 0 4px 24px rgba(102,126,234,0.08); }
     .navbar .dropdown-menu {
       right: 0;
       left: auto;
@@ -33,11 +41,101 @@
     table {
       width: 100%;
       margin-top: 10px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(102,126,234,0.07);
     }
     th, td {
-      padding: 8px;
+      padding: 10px;
       border: 1px solid #ccc;
       text-align: center;
+      font-size: 15px;
+    }
+    th {
+      background: #f8f9fa;
+      color: #333;
+      font-weight: 600;
+    }
+    .btn {
+      border-radius: 7px !important;
+      font-weight: 500;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(102,126,234,0.10);
+    }
+    .btn-primary, .btn-info, .btn-success, .btn-warning, .btn-danger {
+      color: #fff !important;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      border: none !important;
+    }
+    .btn-warning {
+      background: #ffc107 !important;
+      color: #212529 !important;
+    }
+    .btn-success {
+      background: #28a745 !important;
+    }
+    .btn-danger {
+      background: #dc3545 !important;
+    }
+    .btn-info {
+      background: #17a2b8 !important;
+    }
+    @media (max-width: 900px) {
+      .main-content {
+        padding: 12px 2px;
+      }
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .main-content {
+        border-radius: 0;
+        box-shadow: none;
+        padding: 6px 1px;
+      }
+    }
+    
+    /* 简历查看相关样式 */
+    .section-title {
+      font-weight: bold;
+      margin-bottom: 15px;
+      border-left: 4px solid #667eea;
+      padding-left: 10px;
+      font-size: 1.1em;
+      color: #333;
+    }
+    #resumeViewModal .modal-lg {
+      max-width: 90%;
+    }
+    #resumeViewModal .modal-body {
+      padding: 25px;
+    }
+    #resumeModalAvatar {
+      border: 3px solid #667eea;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    #resumeViewModal .card {
+      transition: all 0.2s ease;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    #resumeViewModal .card:hover {
+      box-shadow: 0 5px 15px rgba(102,126,234,0.1);
+      transform: translateY(-3px);
+    }
+    #resumeFileArea .btn {
+      transition: all 0.2s ease;
+    }
+    #resumeFileArea .btn:hover {
+      transform: scale(1.05);
+    }
+    @media (max-width: 768px) {
+      #resumeViewModal .modal-lg {
+        max-width: 100%;
+        margin: 10px;
+      }
     }
   </style>
 </head>
@@ -63,9 +161,9 @@
     <div class="col-md-2 sidebar">
       <a onclick="loadPage('post-job')">发布职位</a>
       <a onclick="loadPage('manage-jobs')">职位管理</a>
-      <a onclick="loadPage('filter-resumes')">简历筛选</a>
+      <a onclick="loadPage('interview-manage')">面试管理</a>
+      <a onclick="loadPage('notification-center')">通知中心</a>
       <a onclick="loadPage('search-jobs')">职位搜索</a>
-      <a onclick="loadPage('company-profile')">公司信息</a>
     </div>
     <div class="col-md-10 main-content" id="mainContent">
       <h4>欢迎来到企业用户中心，请选择左侧功能。</h4>
@@ -74,6 +172,10 @@
 </div>
 
 <script>
+//<![CDATA[
+  // 定义全局变量
+  let currentEmployerId = null;
+  
   function loadPage(page) {
     const content = document.getElementById("mainContent");
 
@@ -115,7 +217,7 @@
           requirements: document.getElementById("requirements").value,
           description: document.getElementById("description").value
         };
-        fetch("http://localhost:9501/jobs/publish", {
+        fetch("/jobs/publish", {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(job)
@@ -135,57 +237,221 @@
       content.innerHTML = `
         <h4>职位管理</h4>
         <table>
-          <thead><tr><th>职位名称</th><th>地点</th><th>薪资</th><th>发布时间</th><th>操作</th></tr></thead>
-          <tbody id="jobList"><tr><td colspan="5">加载中...</td></tr></tbody>
-        </table>`;
-      let currentEmployerId = null;
-
-      fetch('http://localhost:9501/user/companyInfo')
+          <thead><tr><th>职位名称</th><th>地点</th><th>薪资</th><th>发布时间</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="jobList"><tr><td colspan="6">加载中...</td></tr></tbody>
+        </table>
+        
+        <!-- 简历筛选区域 -->
+        <div id="resumeFilterArea" style="display:none; margin-top:30px;">
+          <h4>简历筛选 - <span id="currentJobTitle"></span></h4>
+          <div class="card" style="margin-bottom:20px; border-radius:10px; box-shadow:0 4px 16px rgba(102,126,234,0.1);">
+            <div class="card-body">
+              <table class="table table-bordered">
+                <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                  <tr>
+                    <th>候选人ID</th>
+                    <th>简历</th>
+                    <th>投递时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="resumeTable">
+                  <tr><td colspan="5">请先选择职位</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <button class="btn btn-secondary" onclick="hideResumeFilter()">关闭简历筛选</button>
+        </div>
+        
+        <!-- 模态框 -->
+        <div class="modal fade" id="jobDetailModal">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">职位详情</h5>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+              </div>
+              <div class="modal-body" id="jobDetailContent"></div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal fade" id="editJobModal">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">编辑职位</h5>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+              </div>
+              <div class="modal-body">
+                <form id="editJobForm">
+                  <input type="hidden" id="editJobId" />
+                  <div class="form-group">
+                    <label>职位名称</label>
+                    <input type="text" class="form-control" id="editTitle" required="required" />
+                  </div>
+                  <div class="form-group">
+                    <label>工作地点</label>
+                    <input type="text" class="form-control" id="editLocation" required="required" />
+                  </div>
+                  <div class="form-group">
+                    <label>薪资</label>
+                    <input type="text" class="form-control" id="editSalary" required="required" />
+                  </div>
+                  <div class="form-group">
+                    <label>职位要求</label>
+                    <textarea class="form-control" id="editRequirements" rows="3"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>职位描述</label>
+                    <textarea class="form-control" id="editDescription" rows="4"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary">保存更改</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 简历查看模态框 -->
+        <div class="modal fade" id="resumeViewModal" tabindex="-1" role="dialog" aria-labelledby="resumeViewModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title" id="resumeViewModalLabel">简历详情</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-md-3 text-center mb-3">
+                      <img id="resumeModalAvatar" src="" class="img-fluid rounded" alt="候选人头像" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 150 150\'%3e%3crect fill=\'%23eee\' width=\'150\' height=\'150\'/%3e%3ctext fill=\'%23aaa\' font-family=\'sans-serif\' font-size=\'20\' dy=\'10.5\' font-weight=\'bold\' x=\'50%25\' y=\'50%25\' text-anchor=\'middle\'%3e无头像%3c/text%3e%3c/svg%3e'" style="max-width: 150px; max-height: 150px;" />
+                    </div>
+                    <div class="col-md-9">
+                      <h5>基本信息</h5>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <p><b>姓名：</b><span id="candidateName"></span></p>
+                          <p><b>性别：</b><span id="candidateGender"></span></p>
+                          <p><b>出生日期：</b><span id="candidateBirthDate"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                          <p><b>电话：</b><span id="candidatePhone"></span></p>
+                          <p><b>邮箱：</b><span id="candidateEmail"></span></p>
+                          <p><b>地址：</b><span id="candidateAddress"></span></p>
+                        </div>
+                      </div>
+                      <div id="resumeFileArea" class="mt-3">
+                        <a id="resumeFileDownload" href="#" target="_blank" class="btn btn-info btn-sm">
+                          <i class="fa fa-file-pdf-o"></i> 查看简历附件
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <hr />
+                  <div class="row mt-3">
+                    <div class="col-12">
+                      <h5><b>自我介绍</b></h5>
+                      <div class="card">
+                        <div class="card-body" id="candidateSelfIntro">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="row mt-3">
+                    <div class="col-12">
+                      <h5 class="section-title">教育经历</h5>
+                      <div id="candidateEducations"></div>
+                    </div>
+                  </div>
+                  
+                  <div class="row mt-3">
+                    <div class="col-12">
+                      <h5 class="section-title">工作经历</h5>
+                      <div id="candidateWorkExperiences"></div>
+                    </div>
+                  </div>
+                  
+                  <div class="row mt-3">
+                    <div class="col-12">
+                      <h5 class="section-title">校园经历</h5>
+                      <div id="candidateCampusExperiences"></div>
+                    </div>
+                  </div>
+                  
+                  <div class="row mt-3">
+                    <div class="col-12">
+                      <h5 class="section-title">技能证书</h5>
+                      <div id="candidateSkillCertificates"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+        
+      fetch('/user/companyInfo')
               .then(res => res.json())
               .then(data => {
                 currentEmployerId = data.user_id;
-                fetch(`http://localhost:9501/jobs/employer/${currentEmployerId}`)
+                console.log("页面加载时设置企业ID为:", currentEmployerId);
+                fetch(`/jobs/employer/${currentEmployerId}`)
                         .then(res => res.json())
                         .then(data => {
                           const jobList = document.getElementById("jobList");
                           jobList.innerHTML = '';
                           data.forEach(job => {
+                            // 职位状态样式
+                            let statusClass = 'badge badge-success';
+                            let statusText = '开放中';
+                            let toggleAction = '关闭职位';
+                            let toggleClass = 'btn-warning';
+                            
+                            if (job.status === 'CLOSE') {
+                              statusClass = 'badge badge-secondary';
+                              statusText = '已关闭';
+                              toggleAction = '重新开放';
+                              toggleClass = 'btn-success';
+                            }
+                            
                             jobList.innerHTML += `<tr>
               <td>${job.title}</td>
               <td>${job.location}</td>
               <td>${job.salary}</td>
               <td>${new Date(job.createdTime).toLocaleDateString()}</td>
+              <td><span class="${statusClass}">${statusText}</span></td>
               <td>
                 <button class='btn btn-sm btn-info' onclick='viewDetail(${job.id})'>详情</button>
                 <button class='btn btn-sm btn-warning' onclick='editJob(${job.id})'>编辑</button>
                 <button class='btn btn-sm btn-primary' onclick='viewResumes(${job.id})'>筛选简历</button>
+                <button class='btn btn-sm ${toggleClass}' onclick='toggleJobStatus(${job.id}, "${job.status}")'>
+                  ${toggleAction}
+                </button>
                 <button class='btn btn-sm btn-danger' onclick='deleteJob(${job.id})'>删除</button>
               </td>
             </tr>`;
                           });
                         })
                         .catch(() => {
-                          document.getElementById("jobList").innerHTML = '<tr><td colspan="5">加载失败</td></tr>';
+                          document.getElementById("jobList").innerHTML = '<tr><td colspan="6">加载失败</td></tr>';
                         });
               })
               .catch(() => {
                 alert('获取企业信息失败');
               });
-
-
-
-    } else if (page === 'filter-resumes') {
-      content.innerHTML = `
-        <h4>简历筛选</h4>
-        <div class="form-group">
-          <label>职位 ID：</label>
-          <input class="form-control" id="filterJobId" />
-          <button class="btn btn-primary mt-2" onclick="loadApplications()">加载简历</button>
-        </div>
-        <table class="table table-bordered mt-3">
-          <thead><tr><th>候选人ID</th><th>简历</th><th>投递时间</th><th>状态</th></tr></thead>
-          <tbody id="resumeTable"><tr><td colspan="4">请先输入职位 ID</td></tr></tbody>
-        </table>`;
 
     } else if (page === 'search-jobs') {
       content.innerHTML = `
@@ -201,11 +467,151 @@
 
     } else if (page === 'company-profile') {
       content.innerHTML = "<h4>公司信息</h4><p>公司信息查看/编辑界面...</p>";
+    } else if (page === 'interview-manage') {
+      console.log("加载面试管理页面");
+      content.innerHTML = `
+      <div class="container-fluid p-0">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <h4>面试管理</h4>
+          </div>
+          <div class="col-md-6 text-right">
+            <button class="btn btn-primary" onclick="showCreateInterviewModal()">创建新面试</button>
+          </div>
+        </div>
+        
+        <div class="card mb-4" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(102,126,234,0.12);">
+          <div class="card-body">
+            <h5 class="card-title mb-3">面试列表</h5>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                  <tr>
+                    <th>ID</th>
+                    <th>候选人</th>
+                    <th>职位</th>
+                    <th>面试时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="interviewTable">
+                  <tr>
+                    <td colspan="6" class="text-center">加载中...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>`;
+      
+      console.log("初始化面试管理页面，准备加载面试列表...");
+      
+      // 确保等待获取到用户ID后再加载面试列表
+      if (currentEmployerId) {
+        console.log("已有企业ID:", currentEmployerId, "直接加载面试列表");
+        loadInterviewsList();
+      } else {
+        console.log("未获取到企业ID，开始从服务器获取");
+        // 等待获取用户信息后再加载面试列表
+        fetch('/user/companyInfo')
+          .then(res => {
+            console.log("企业信息API响应状态:", res.status);
+            return res.json();
+          })
+          .then(data => {
+            console.log("获取到企业信息:", data);
+            currentEmployerId = data.user_id;
+            console.log("设置企业ID为:", currentEmployerId);
+            loadInterviewsList();
+          })
+          .catch(error => {
+            console.error('获取企业信息失败:', error);
+            document.getElementById("interviewTable").innerHTML = '<tr><td colspan="6" class="text-center text-danger">获取企业信息失败</td></tr>';
+          });
+      }
+      
+    } else if (page === 'notification-center') {
+      console.log("加载通知中心页面");
+      content.innerHTML = `
+      <div class="container-fluid p-0">
+        <h4 class="mb-3">通知中心</h4>
+        
+        <!-- 统计信息 -->
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <div class="card text-center" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(102,126,234,0.12);">
+              <div class="card-body">
+                <h5 class="card-title" id="totalNotifications">0</h5>
+                <p class="card-text">总通知数</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card text-center" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(102,126,234,0.12);">
+              <div class="card-body">
+                <h5 class="card-title" id="unreadNotifications">0</h5>
+                <p class="card-text">未读通知</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card text-center" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(102,126,234,0.12);">
+              <div class="card-body">
+                <h5 class="card-title" id="todayNotifications">0</h5>
+                <p class="card-text">今日通知</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="mb-3">
+          <button class="btn btn-primary mr-2" onclick="loadNotifications()">刷新通知</button>
+          <button class="btn btn-success mr-2" onclick="markAllAsRead()">全部标记为已读</button>
+        </div>
+        
+        <!-- 通知列表 -->
+        <div class="card" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(102,126,234,0.12);">
+          <div class="card-body">
+            <div id="notificationList">
+              <p class="text-center">正在加载通知...</p>
+            </div>
+          </div>
+        </div>
+      </div>`;
+      
+      console.log("初始化通知中心页面，准备加载通知...");
+      
+      // 确保等待获取到用户ID后再加载通知
+      if (currentEmployerId) {
+        console.log("已有企业ID:", currentEmployerId, "直接加载通知");
+        loadNotifications();
+      } else {
+        console.log("未获取到企业ID，开始从服务器获取");
+        // 等待获取用户信息后再加载通知
+        fetch('/user/companyInfo')
+          .then(res => {
+            console.log("企业信息API响应状态:", res.status);
+            return res.json();
+          })
+          .then(data => {
+            console.log("获取到企业信息:", data);
+            currentEmployerId = data.user_id;
+            console.log("设置企业ID为:", currentEmployerId);
+            loadNotifications();
+          })
+          .catch(error => {
+            console.error('获取企业信息失败:', error);
+            document.getElementById("notificationList").innerHTML = '<p class="text-danger text-center">获取企业信息失败</p>';
+          });
+      }
     }
   }
 
   function viewDetail(jobId) {
-    fetch(`http://localhost:9501/jobs/${jobId}`)
+    fetch(`/jobs/${jobId}`)
             .then(res => res.json())
             .then(job => {
               const html = `
@@ -226,36 +632,279 @@
             });
   }
 
-  function viewResumes(jobId) {
-    document.getElementById("filterJobId").value = jobId;
-    loadPage('filter-resumes');
-    setTimeout(loadApplications, 300);
+  function viewResumes(jobId, jobTitle) {
+    // 显示简历筛选区域
+    document.getElementById("resumeFilterArea").style.display = "block";
+    
+    // 获取职位标题
+    if (!jobTitle) {
+      fetch(`/jobs/${jobId}`)
+        .then(res => res.json())
+        .then(job => {
+          document.getElementById("currentJobTitle").textContent = job.title || "职位ID: " + jobId;
+        })
+        .catch(() => {
+          document.getElementById("currentJobTitle").textContent = "职位ID: " + jobId;
+        });
+    } else {
+      document.getElementById("currentJobTitle").textContent = jobTitle || "职位ID: " + jobId;
+    }
+    
+    // 滚动到筛选区域
+    document.getElementById("resumeFilterArea").scrollIntoView({ behavior: 'smooth' });
+    
+    // 加载筛选数据
+    loadResumesByJobId(jobId);
+  }
+  
+  function hideResumeFilter() {
+    document.getElementById("resumeFilterArea").style.display = "none";
   }
 
-  function loadApplications() {
-    const jobId = document.getElementById("filterJobId").value;
-    fetch(`http://localhost:9501/jobs/job/${jobId}`)
-            .then(res => res.json())
+  function loadResumesByJobId(jobId) {
+    if (!jobId) {
+      console.error("无效的职位ID");
+      return;
+    }
+    
+    const tbody = document.getElementById("resumeTable");
+    tbody.innerHTML = '<tr><td colspan="5">加载中...</td></tr>';
+    
+    fetch(`/jobs/job/${jobId}`)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP错误! 状态: ${res.status}`);
+        }
+        return res.json();
+      })
             .then(data => {
-              const tbody = document.getElementById("resumeTable");
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5">暂无简历投递记录</td></tr>';
+          return;
+        }
+        
               tbody.innerHTML = '';
               data.forEach(app => {
+          let statusBadge = '<span class="badge badge-warning">待处理</span>';
+          let actions = `
+            <button class="btn btn-sm btn-success" onclick="updateApplicationStatus(${app.id}, 'ACCEPTED')">通过</button>
+            <button class="btn btn-sm btn-danger" onclick="updateApplicationStatus(${app.id}, 'REJECTED')">拒绝</button>
+            <button class="btn btn-sm btn-info" onclick="updateApplicationStatus(${app.id}, 'INTERVIEWED')">已面试</button>
+            <button class="btn btn-sm btn-primary" onclick="loadCandidateResume(${app.candidateId})">查看简历</button>
+            <button class="btn btn-sm btn-warning" onclick="createInterviewForCandidate(${app.candidateId}, ${jobId})">安排面试</button>
+          `;
+          
+          if (app.status === 'ACCEPTED') {
+            statusBadge = '<span class="badge badge-success">已通过</span>';
+          } else if (app.status === 'REJECTED') {
+            statusBadge = '<span class="badge badge-danger">已拒绝</span>';
+          } else if (app.status === 'INTERVIEWED') {
+            statusBadge = '<span class="badge badge-info">已面试</span>';
+          }
+          
                 tbody.innerHTML += `<tr>
           <td>${app.candidateId}</td>
-          <td>${app.resume}</td>
-          <td>${app.applyTime}</td>
-          <td>${app.status}</td>
+            <td>${app.resume || '无简历'}</td>
+            <td>${new Date(app.applyTime).toLocaleDateString()}</td>
+            <td>${statusBadge}</td>
+            <td>${actions}</td>
         </tr>`;
               });
             })
-            .catch(() => {
-              document.getElementById("resumeTable").innerHTML = '<tr><td colspan="4">加载失败</td></tr>';
+      .catch(error => {
+        console.error("加载简历失败:", error);
+        tbody.innerHTML = '<tr><td colspan="5">加载失败，请稍后再试</td></tr>';
+      });
+  }
+  
+  function loadCandidateResume(candidateId) {
+    // 清空之前的数据
+    document.getElementById('candidateName').textContent = '';
+    document.getElementById('candidateGender').textContent = '';
+    document.getElementById('candidateBirthDate').textContent = '';
+    document.getElementById('candidatePhone').textContent = '';
+    document.getElementById('candidateEmail').textContent = '';
+    document.getElementById('candidateAddress').textContent = '';
+    document.getElementById('candidateSelfIntro').textContent = '';
+    document.getElementById('candidateEducations').innerHTML = '';
+    document.getElementById('candidateWorkExperiences').innerHTML = '';
+    document.getElementById('candidateCampusExperiences').innerHTML = '';
+    document.getElementById('candidateSkillCertificates').innerHTML = '';
+    document.getElementById('resumeModalAvatar').src = '';
+    document.getElementById('resumeFileArea').style.display = 'none';
+    
+    // 打开模态框
+    $('#resumeViewModal').modal('show');
+    
+    // 加载简历数据
+    fetch(`/resume/who/${candidateId}`)
+      .then(res => res.json())
+      .then(response => {
+        if (response.code === 200 && response.data) {
+          const resume = response.data;
+          
+          // 设置基本信息
+          document.getElementById('candidateName').textContent = resume.name || '未提供';
+          document.getElementById('candidateGender').textContent = resume.gender || '未提供';
+          document.getElementById('candidateBirthDate').textContent = resume.birthDate || '未提供';
+          document.getElementById('candidatePhone').textContent = resume.phone || '未提供';
+          document.getElementById('candidateEmail').textContent = resume.email || '未提供';
+          document.getElementById('candidateAddress').textContent = resume.address || '未提供';
+          document.getElementById('candidateSelfIntro').textContent = resume.selfIntroduction || '未提供自我介绍';
+          
+          // 设置头像
+          if (resume.avatarPath) {
+            document.getElementById('resumeModalAvatar').src = `/${resume.avatarPath}`;
+          }
+          
+          // 设置简历附件链接
+          if (resume.resumeFilePath) {
+            document.getElementById('resumeFileArea').style.display = 'block';
+            document.getElementById('resumeFileDownload').href = `/${resume.resumeFilePath}`;
+          } else {
+            document.getElementById('resumeFileArea').style.display = 'none';
+          }
+          
+          // 渲染教育经历
+          const educationsDiv = document.getElementById('candidateEducations');
+          if (resume.educations && resume.educations.length > 0) {
+            resume.educations.forEach(edu => {
+              const eduDiv = document.createElement('div');
+              eduDiv.className = 'card mb-2';
+              eduDiv.innerHTML = `
+                <div class="card-body">
+                  <h6 class="card-title">${edu.schoolName || '未知学校'} - ${edu.major || '未知专业'}</h6>
+                  <h6 class="card-subtitle mb-2 text-muted">${edu.degree || '未知学历'}</h6>
+                  <p class="card-text"><small>${edu.startDate || ''} 至 ${edu.endDate || ''}</small></p>
+                  <p class="card-text">${edu.description || '无描述'}</p>
+                </div>
+              `;
+              educationsDiv.appendChild(eduDiv);
+            });
+          } else {
+            educationsDiv.innerHTML = '<p class="text-muted">暂无教育经历</p>';
+          }
+          
+          // 渲染工作经历
+          const workExpsDiv = document.getElementById('candidateWorkExperiences');
+          if (resume.workExperiences && resume.workExperiences.length > 0) {
+            resume.workExperiences.forEach(work => {
+              const workDiv = document.createElement('div');
+              workDiv.className = 'card mb-2';
+              workDiv.innerHTML = `
+                <div class="card-body">
+                  <h6 class="card-title">${work.companyName || '未知公司'} - ${work.position || '未知职位'}</h6>
+                  <p class="card-text"><small>${work.startDate || ''} 至 ${work.endDate || ''}</small></p>
+                  <p class="card-text">${work.description || '无描述'}</p>
+                </div>
+              `;
+              workExpsDiv.appendChild(workDiv);
+            });
+          } else {
+            workExpsDiv.innerHTML = '<p class="text-muted">暂无工作经历</p>';
+          }
+          
+          // 渲染校园经历
+          const campusExpsDiv = document.getElementById('candidateCampusExperiences');
+          if (resume.campusExperiences && resume.campusExperiences.length > 0) {
+            resume.campusExperiences.forEach(campus => {
+              const campusDiv = document.createElement('div');
+              campusDiv.className = 'card mb-2';
+              campusDiv.innerHTML = `
+                <div class="card-body">
+                  <h6 class="card-title">${campus.activityName || '未知活动'} - ${campus.role || '未知角色'}</h6>
+                  <p class="card-text"><small>${campus.startDate || ''} 至 ${campus.endDate || ''}</small></p>
+                  <p class="card-text">${campus.description || '无描述'}</p>
+                </div>
+              `;
+              campusExpsDiv.appendChild(campusDiv);
+            });
+          } else {
+            campusExpsDiv.innerHTML = '<p class="text-muted">暂无校园经历</p>';
+          }
+          
+          // 渲染技能证书
+          const skillsDiv = document.getElementById('candidateSkillCertificates');
+          if (resume.skillCertificates && resume.skillCertificates.length > 0) {
+            resume.skillCertificates.forEach(skill => {
+              const skillDiv = document.createElement('div');
+              skillDiv.className = 'card mb-2';
+              skillDiv.innerHTML = `
+                <div class="card-body">
+                  <h6 class="card-title">${skill.skillName || '未知技能'} - ${skill.proficiency || '熟练度未知'}</h6>
+                  <p class="card-text">证书：${skill.certificateName || '无证书'}</p>
+                </div>
+              `;
+              skillsDiv.appendChild(skillDiv);
+            });
+          } else {
+            skillsDiv.innerHTML = '<p class="text-muted">暂无技能证书</p>';
+          }
+        } else {
+          // 显示获取简历失败信息
+          document.getElementById('candidateName').textContent = '获取简历信息失败';
+        }
+      })
+      .catch(error => {
+        console.error('获取简历失败:', error);
+        document.getElementById('candidateName').textContent = '获取简历信息失败';
+      });
+  }
+  
+  function updateApplicationStatus(appId, status) {
+    fetch(`/jobs/application/${appId}/status?status=${status}`, {
+      method: 'PUT'
+    })
+    .then(res => {
+      if (res.ok) {
+        // 先显示成功消息
+        alert("状态更新成功");
+        
+        // 获取当前职位ID并刷新简历列表
+        setTimeout(() => {
+          const jobId = document.getElementById("currentJobTitle").textContent.split(":")[1]?.trim() || "";
+          if (jobId) {
+            loadResumesByJobId(jobId);
+          }
+        }, 500);
+      } else {
+        alert("状态更新失败");
+      }
+    })
+    .catch(() => alert("请求失败"));
+  }
+  
+  function toggleJobStatus(jobId, currentStatus) {
+    const newStatus = currentStatus === 'CLOSE' ? 'OPEN' : 'CLOSE';
+    const actionText = newStatus === 'OPEN' ? '重新开放' : '关闭';
+    
+    if (!confirm(`确定要${actionText}该职位吗？`)) {
+      return;
+    }
+    
+    fetch(`/jobs/${jobId}/status?status=${newStatus.toLowerCase()}`, {
+      method: 'PUT'
+    })
+    .then(res => {
+      if (res.ok) {
+        alert(`职位已${actionText}`);
+        // 延迟一点再刷新，确保后端处理完成
+        setTimeout(() => {
+          loadPage('manage-jobs');  // 重新加载职位列表
+        }, 300);
+      } else {
+        alert(`${actionText}失败`);
+      }
+    })
+    .catch(error => {
+      console.error("状态切换失败:", error);
+      alert("请求失败，请稍后重试");
             });
   }
 
   function searchJobs() {
     const keyword = document.getElementById("searchKeyword").value;
-    fetch(`http://localhost:9501/jobs/search?keyword=${keyword}`)
+    fetch(`/jobs/search?keyword=${keyword}`)
             .then(res => res.json())
             .then(data => {
               const tbody = document.getElementById("searchResult");
@@ -279,13 +928,12 @@
     window.location.href = "/index.html";
   }
 
-
   function deleteJob(jobId) {
     if (!confirm("确定要删除该职位吗？")) {
       return;
     }
 
-    fetch(`http://localhost:9501/jobs/${jobId}`, {
+    fetch(`/jobs/${jobId}`, {
       method: 'DELETE'
     })
             .then(res => {
@@ -301,7 +949,7 @@
   $(function() {
     // 点击编辑时加载职位数据并打开模态框
     window.editJob = function(jobId) {
-      fetch(`http://localhost:9501/jobs/${jobId}`)
+      fetch(`/jobs/${jobId}`)
               .then(res => res.json())
               .then(job => {
                 $('#editJobId').val(job.id);
@@ -328,7 +976,7 @@
         description: $('#editDescription').val()
       };
 
-      fetch("http://localhost:9501/jobs/update", {
+      fetch("/jobs/update", {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedJob)
@@ -342,6 +990,415 @@
               .catch(() => alert("更新失败"));
     });
   });
+
+  // 面试管理相关函数
+  function loadInterviewsList() {
+    console.log("开始加载面试列表...");
+    const interviewTable = document.getElementById("interviewTable");
+    // 获取当前用户 ID
+    const userId = currentEmployerId;
+    
+    // 如果没有获取到用户ID，显示错误信息
+    if (!userId) {
+      console.error("未获取到企业用户ID，无法加载面试列表");
+      interviewTable.innerHTML = '<tr><td colspan="6" class="text-center text-danger">获取用户信息失败</td></tr>';
+      return;
+    }
+    
+    console.log("企业ID:", userId, "准备发起面试列表请求");
+    
+    // 使用相对路径，通过网关转发
+    fetch('/interviews/all', {
+      headers: { 'Authorization': `Bearer ${getCookie('token') || localStorage.getItem('jwtToken')}` }
+    })
+    .then(res => {
+      console.log("面试列表API响应状态:", res.status);
+      if (!res.ok) {
+        throw new Error(`面试列表请求失败: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      console.log("面试列表数据:", data);
+      
+      // 确保data是数组，处理嵌套在data字段中的面试数据
+      const interviews = Array.isArray(data) ? data : (data.data || []);
+      
+      if (!interviews || interviews.length === 0) {
+        interviewTable.innerHTML = '<tr><td colspan="6" class="text-center">暂无面试记录</td></tr>';
+        return;
+      }
+      
+      // 过滤当前企业用户创建的面试
+      const filteredInterviews = interviews.filter(interview => interview.createdBy === userId);
+      console.log("过滤后的面试数量:", filteredInterviews.length);
+      
+      if (filteredInterviews.length === 0) {
+        interviewTable.innerHTML = '<tr><td colspan="6" class="text-center">暂无面试记录</td></tr>';
+        return;
+      }
+      
+      interviewTable.innerHTML = '';
+      filteredInterviews.forEach(interview => {
+        // 状态样式
+        let statusClass = 'badge badge-warning';
+        switch(interview.status) {
+          case 'SCHEDULED':
+            statusClass = 'badge badge-primary';
+            break;
+          case 'COMPLETED':
+            statusClass = 'badge badge-success';
+            break;
+          case 'CANCELLED':
+            statusClass = 'badge badge-danger';
+            break;
+        }
+        
+        // 格式化日期
+        const interviewDate = new Date(interview.scheduledTime).toLocaleString();
+        
+        interviewTable.innerHTML += `
+          <tr>
+            <td>${interview.id}</td>
+            <td>${interview.userId}</td>
+            <td>${interview.jobId}</td>
+            <td>${interviewDate}</td>
+            <td><span class="${statusClass}">${interview.status}</span></td>
+            <td>
+              <button class="btn btn-sm btn-primary" onclick="viewInterviewDetail(${interview.id})">详情</button>
+              <button class="btn btn-sm btn-info" onclick="updateInterviewStatus(${interview.id})">更新状态</button>
+            </td>
+          </tr>`;
+      });
+    })
+    .catch(error => {
+      console.error('加载面试列表失败:', error);
+      interviewTable.innerHTML = '<tr><td colspan="6" class="text-center text-danger">加载面试列表失败: ' + error.message + '</td></tr>';
+    });
+  }
+
+  function showCreateInterviewModal() {
+    // 使用Bootstrap模态框创建新面试
+    $('#createInterviewModal').modal('show');
+    
+    // 设置默认面试时间为明天
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(14, 0, 0, 0);
+    document.getElementById('scheduledTime').value = tomorrow.toISOString().slice(0, 16);
+  }
+
+  function createInterview() {
+    const jobId = parseInt(document.getElementById('jobId').value);
+    const userId = parseInt(document.getElementById('candidateId').value);
+    const scheduledTime = document.getElementById('scheduledTime').value;
+    const location = document.getElementById('location').value;
+    const interviewType = document.getElementById('interviewType').value;
+    const interviewer = document.getElementById('interviewer').value;
+    const status = document.getElementById('status').value;
+    
+    if (!jobId || !userId || !scheduledTime || !location) {
+      alert('请填写完整信息');
+      return;
+    }
+    
+    const formData = {
+      jobId: jobId,
+      userId: userId,
+      scheduledTime: scheduledTime,
+      location: location,
+      interviewType: interviewType,
+      interviewer: interviewer,
+      status: status
+    };
+    
+    fetch('/interviews', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getCookie('token') || localStorage.getItem('jwtToken')}`
+      },
+      body: JSON.stringify(formData)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success || data.code === 200) {
+        alert('面试创建成功！通知消息已发送到候选人。');
+        $('#createInterviewModal').modal('hide');
+        loadInterviewsList(); // 重新加载面试列表
+      } else {
+        alert(data.message || '创建失败');
+      }
+    })
+    .catch(error => {
+      console.error('创建面试失败:', error);
+      alert('创建面试失败，请稍后重试');
+    });
+  }
+
+  function viewInterviewDetail(interviewId) {
+    fetch(`/interviews/${interviewId}`, {
+      headers: { 'Authorization': `Bearer ${getCookie('token') || localStorage.getItem('jwtToken')}` }
+    })
+    .then(res => res.json())
+    .then(response => {
+      console.log('获取到面试详情:', response);
+      
+      // 处理嵌套在data字段中的面试数据
+      const interview = response.data || response;
+      
+      if (!interview || !interview.id) {
+        console.error('面试数据无效:', interview);
+        throw new Error('获取到的面试数据无效');
+      }
+      
+      const interviewDate = interview.scheduledTime ? new Date(interview.scheduledTime).toLocaleString() : '未设置';
+      
+      const detailHTML = `
+        <p><strong>面试ID：</strong> ${interview.id}</p>
+        <p><strong>候选人ID：</strong> ${interview.userId}</p>
+        <p><strong>职位ID：</strong> ${interview.jobId}</p>
+        <p><strong>面试时间：</strong> ${interviewDate}</p>
+        <p><strong>面试地点：</strong> ${interview.location || '未设置'}</p>
+        <p><strong>面试类型：</strong> ${interview.interviewType || '未设置'}</p>
+        <p><strong>面试官：</strong> ${interview.interviewer || '未设置'}</p>
+        <p><strong>当前状态：</strong> ${interview.status || '未设置'}</p>
+      `;
+      
+      // 使用Bootstrap模态框显示详情
+      document.getElementById('interviewDetailContent').innerHTML = detailHTML;
+      $('#interviewDetailModal').modal('show');
+    })
+    .catch(error => {
+      console.error('获取面试详情失败:', error);
+      alert('获取面试详情失败: ' + error.message);
+    });
+  }
+
+  function updateInterviewStatus(interviewId) {
+    // 使用Bootstrap模态框更新状态
+    $('#updateStatusModal').modal('show');
+    document.getElementById('updateInterviewId').value = interviewId;
+  }
+
+  function saveInterviewStatus() {
+    const interviewId = document.getElementById('updateInterviewId').value;
+    const newStatus = document.getElementById('newStatus').value;
+    
+    if (!interviewId || !newStatus) {
+      alert('面试ID或状态无效');
+      return;
+    }
+    
+    console.log(`准备更新面试状态，ID: ${interviewId}, 新状态: ${newStatus}`);
+    
+    fetch(`/interviews/${interviewId}/status?status=${newStatus}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${getCookie('token') || localStorage.getItem('jwtToken')}` }
+    })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`状态更新失败: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(response => {
+      console.log('状态更新响应:', response);
+      
+      if (response.success || response.code === 200) {
+        alert('面试状态更新成功');
+        $('#updateStatusModal').modal('hide');
+        loadInterviewsList(); // 重新加载面试列表
+      } else {
+        alert(response.message || '状态更新失败');
+      }
+    })
+    .catch(error => {
+      console.error('更新面试状态失败:', error);
+      alert('更新面试状态失败: ' + error.message);
+    });
+  }
+
+  // 通知中心相关函数
+  function loadNotifications() {
+    console.log("开始加载通知...");
+    // 获取当前企业用户ID
+    const userId = currentEmployerId;
+    if (!userId) {
+      console.error("未获取到企业用户ID，无法加载通知");
+      document.getElementById('notificationList').innerHTML = '<p class="text-danger text-center">获取用户信息失败</p>';
+      return;
+    }
+    
+    console.log("企业ID:", userId, "准备发起通知列表请求");
+    
+    // 使用相对路径，通过网关转发
+    fetch(`/api/notifications/user/${userId}?page=0&amp;size=50`, {
+      headers: { 'Authorization': `Bearer ${getCookie('token') || localStorage.getItem('jwtToken')}` }
+    })
+    .then(res => {
+      console.log("通知API响应状态:", res.status);
+      if (!res.ok) {
+        throw new Error(`通知请求失败: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      console.log('通知数据:', data);
+      const notifications = data.data?.content || [];
+      console.log('通知数量:', notifications.length);
+      renderNotifications(notifications);
+      updateNotificationStats(notifications);
+    })
+    .catch(error => {
+      console.error('获取通知失败:', error);
+      document.getElementById('notificationList').innerHTML = '<p class="text-danger text-center">获取通知失败: ' + error.message + '</p>';
+    });
+  }
+
+  function renderNotifications(notifications) {
+    const container = document.getElementById('notificationList');
+    
+    if (!notifications || notifications.length === 0) {
+      container.innerHTML = '<p class="text-center">暂无通知</p>';
+      return;
+    }
+    
+    let html = '';
+    notifications.forEach(notification => {
+      const isUnread = !notification.isRead;
+      const timeAgo = getTimeAgo(new Date(notification.createdAt));
+      
+      html += `
+        <div class="card mb-3 ${isUnread ? 'border-left-warning' : ''}" style="border-left: ${isUnread ? '4px solid #ffc107' : 'none'}">
+          <div class="card-body">
+            <h5 class="card-title">${notification.title}</h5>
+            <p class="card-text">${notification.content.replace(/\n/g, '<br />')}</p>
+            <div class="d-flex justify-content-between">
+              <small class="text-muted">${timeAgo}</small>
+              <div>
+                <span class="badge badge-primary mr-2">${notification.type}</span>
+                ${isUnread ? `<button class="btn btn-sm btn-success" onclick="markAsRead(${notification.id})">标记已读</button>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    container.innerHTML = html;
+  }
+
+  function updateNotificationStats(notifications) {
+    if (!notifications) return;
+    
+    const total = notifications.length;
+    const unread = notifications.filter(n => !n.isRead).length;
+    const today = notifications.filter(n => {
+      const today = new Date();
+      const notificationDate = new Date(n.createdAt);
+      return notificationDate.toDateString() === today.toDateString();
+    }).length;
+    
+    document.getElementById('totalNotifications').textContent = total;
+    document.getElementById('unreadNotifications').textContent = unread;
+    document.getElementById('todayNotifications').textContent = today;
+  }
+
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (days > 0) return `${days}天前`;
+    if (hours > 0) return `${hours}小时前`;
+    if (minutes > 0) return `${minutes}分钟前`;
+    return '刚刚';
+  }
+
+  function markAsRead(notificationId) {
+    fetch(`/api/notifications/${notificationId}/read`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${getCookie('token') || localStorage.getItem('jwtToken')}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success || data.code === 200) {
+        alert('通知已标记为已读');
+        loadNotifications(); // 重新加载通知
+      } else {
+        alert(data.message || '操作失败');
+      }
+    })
+    .catch(error => {
+      console.error('标记已读失败:', error);
+      alert('标记已读失败');
+    });
+  }
+
+  function markAllAsRead() {
+    const userId = currentEmployerId;
+    if (!userId) {
+      alert('获取用户信息失败');
+      return;
+    }
+    
+    fetch(`/api/notifications/user/${userId}/read-all`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${getCookie('token') || localStorage.getItem('jwtToken')}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success || data.code === 200) {
+        alert('所有通知已标记为已读');
+        loadNotifications(); // 重新加载通知
+      } else {
+        alert(data.message || '操作失败');
+      }
+    })
+    .catch(error => {
+      console.error('全部标记已读失败:', error);
+      alert('操作失败');
+    });
+  }
+
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  }
+
+  function createInterviewForCandidate(candidateId, jobId) {
+    // 打开面试安排模态框
+    $('#createInterviewModal').modal('show');
+    
+    // 填充表单数据
+    document.getElementById('jobId').value = jobId;
+    document.getElementById('candidateId').value = candidateId;
+    document.getElementById('scheduledTime').value = new Date().toISOString().slice(0, 16);
+    document.getElementById('location').value = "线上会议室";
+    document.getElementById('interviewType').value = "ONLINE";
+    document.getElementById('interviewer').value = "HR";
+    document.getElementById('status').value = "SCHEDULED";
+  }
+
+  // 页面加载时获取企业ID
+  document.addEventListener('DOMContentLoaded', function() {
+    // 获取企业ID
+    fetch('/user/companyInfo')
+      .then(res => res.json())
+      .then(data => {
+        currentEmployerId = data.user_id;
+        console.log("页面加载时设置企业ID为:", currentEmployerId);
+      })
+      .catch(error => {
+        console.error('获取企业信息失败:', error);
+      });
+  });
+//]]>
 </script>
 
 
@@ -352,9 +1409,7 @@
       <form id="editJobForm">
         <div class="modal-header">
           <h5 class="modal-title" id="editJobModalLabel">编辑职位</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
-            <span aria-hidden="true">&times;</span>
-          </button>
+          <button type="button" class="close" data-dismiss="modal">×</button>
         </div>
         <div class="modal-body">
           <input type="hidden" id="editJobId" />
@@ -395,9 +1450,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="jobDetailModalLabel">职位详情</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="close" data-dismiss="modal">×</button>
       </div>
       <div class="modal-body" id="jobDetailContent">
         <p>加载中...</p>
@@ -408,5 +1461,203 @@
     </div>
   </div>
 </div>
+
+<!-- 简历查看模态框 -->
+<div class="modal fade" id="resumeViewModal" tabindex="-1" role="dialog" aria-labelledby="resumeViewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h5 class="modal-title" id="resumeViewModalLabel">简历详情</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-3 text-center mb-3">
+              <img id="resumeModalAvatar" src="" class="img-fluid rounded" alt="候选人头像" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 150 150\'%3e%3crect fill=\'%23eee\' width=\'150\' height=\'150\'/%3e%3ctext fill=\'%23aaa\' font-family=\'sans-serif\' font-size=\'20\' dy=\'10.5\' font-weight=\'bold\' x=\'50%25\' y=\'50%25\' text-anchor=\'middle\'%3e无头像%3c/text%3e%3c/svg%3e'" style="max-width: 150px; max-height: 150px;" />
+            </div>
+            <div class="col-md-9">
+              <h5>基本信息</h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <p><b>姓名：</b><span id="candidateName"></span></p>
+                  <p><b>性别：</b><span id="candidateGender"></span></p>
+                  <p><b>出生日期：</b><span id="candidateBirthDate"></span></p>
+                </div>
+                <div class="col-md-6">
+                  <p><b>电话：</b><span id="candidatePhone"></span></p>
+                  <p><b>邮箱：</b><span id="candidateEmail"></span></p>
+                  <p><b>地址：</b><span id="candidateAddress"></span></p>
+                </div>
+              </div>
+              <div id="resumeFileArea" class="mt-3">
+                <a id="resumeFileDownload" href="#" target="_blank" class="btn btn-info btn-sm">
+                  <i class="fa fa-file-pdf-o"></i> 查看简历附件
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <hr />
+          <div class="row mt-3">
+            <div class="col-12">
+              <h5><b>自我介绍</b></h5>
+              <div class="card">
+                <div class="card-body" id="candidateSelfIntro">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-3">
+            <div class="col-12">
+              <h5 class="section-title">教育经历</h5>
+              <div id="candidateEducations"></div>
+            </div>
+          </div>
+          
+          <div class="row mt-3">
+            <div class="col-12">
+              <h5 class="section-title">工作经历</h5>
+              <div id="candidateWorkExperiences"></div>
+            </div>
+          </div>
+          
+          <div class="row mt-3">
+            <div class="col-12">
+              <h5 class="section-title">校园经历</h5>
+              <div id="candidateCampusExperiences"></div>
+            </div>
+          </div>
+          
+          <div class="row mt-3">
+            <div class="col-12">
+              <h5 class="section-title">技能证书</h5>
+              <div id="candidateSkillCertificates"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 创建面试模态框 -->
+<div class="modal fade" id="createInterviewModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">创建新面试</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="jobId">职位ID *</label>
+            <input type="number" class="form-control" id="jobId" required="required" />
+          </div>
+          <div class="form-group">
+            <label for="candidateId">候选人用户ID *</label>
+            <input type="number" class="form-control" id="candidateId" required="required" />
+          </div>
+          <div class="form-group">
+            <label for="scheduledTime">面试时间 *</label>
+            <input type="datetime-local" class="form-control" id="scheduledTime" required="required" />
+          </div>
+          <div class="form-group">
+            <label for="location">面试地点 *</label>
+            <input type="text" class="form-control" id="location" value="线上会议室" required="required" />
+          </div>
+          <div class="form-group">
+            <label for="interviewType">面试类型 *</label>
+            <select class="form-control" id="interviewType" required="required">
+              <option value="ONLINE">线上面试</option>
+              <option value="OFFLINE">线下面试</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="interviewer">面试官 *</label>
+            <input type="text" class="form-control" id="interviewer" value="HR" required="required" />
+          </div>
+          <div class="form-group">
+            <label for="status">面试状态</label>
+            <select class="form-control" id="status">
+              <option value="SCHEDULED">已安排</option>
+              <option value="PENDING">待确认</option>
+              <option value="IN_PROGRESS">进行中</option>
+              <option value="COMPLETED">已完成</option>
+              <option value="CANCELLED">已取消</option>
+              <option value="NO_SHOW">未出席</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" onclick="createInterview()">创建面试并发送通知</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 面试详情模态框 -->
+<div class="modal fade" id="interviewDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">面试详情</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="interviewDetailContent"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 更新面试状态模态框 -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">更新面试状态</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="updateInterviewId" />
+        <div class="form-group">
+          <label for="newStatus">选择新状态</label>
+          <select class="form-control" id="newStatus">
+            <option value="SCHEDULED">已安排</option>
+            <option value="PENDING">待确认</option>
+            <option value="IN_PROGRESS">进行中</option>
+            <option value="COMPLETED">已完成</option>
+            <option value="CANCELLED">已取消</option>
+            <option value="NO_SHOW">未出席</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" onclick="saveInterviewStatus()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

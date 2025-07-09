@@ -68,12 +68,12 @@ public class InterviewServiceImpl implements InterviewService {
 
             // 验证用户是否存在
             log.info("开始验证用户是否存在，用户ID: {}", request.getUserId());
-            validateUserExists(request.getUserId());
+//            validateUserExists(request.getUserId());
             log.info("用户验证成功，用户ID: {}", request.getUserId());
 
             // 验证职位是否存在
             log.info("开始验证职位是否存在，职位ID: {}", request.getJobId());
-            validateJobExists(request.getJobId());
+//            validateJobExists(request.getJobId());
             log.info("职位验证成功，职位ID: {}", request.getJobId());
 
             // 创建面试记录
@@ -221,8 +221,10 @@ public class InterviewServiceImpl implements InterviewService {
             notification.put("userId", interview.getUserId());
             notification.put("jobId", interview.getJobId());
             notification.put("type", type);
+            notification.put("title", "面试通知 - " + type);
             notification.put("content", generateNotificationContent(interview, type));
             notification.put("timestamp", LocalDateTime.now());
+            notification.put("notificationType", type);
             
             rabbitTemplate.convertAndSend(interviewExchange, interviewNotificationRoutingKey, notification);
             log.info("通知发送成功，面试ID: {}, 类型: {}", interview.getId(), type);

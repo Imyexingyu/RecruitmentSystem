@@ -76,5 +76,21 @@ public class JobServiceImpl implements JobService {
         result.put("message", rows > 0 ? "删除成功" : "删除失败或不存在");
         return result;
     }
+
+    @Override
+    public boolean updateApplicationStatus(Long id, String status) {
+        return applicationMapper.updateStatus(id, status) > 0;
+    }
+
+
+    @Override
+    public boolean updateJobStatus(Long id, String status) {
+        // 简单校验一下状态值
+        if (!"OPEN".equalsIgnoreCase(status) && !"CLOSE".equalsIgnoreCase(status)) {
+            throw new IllegalArgumentException("状态值必须为 OPEN 或 CLOSE");
+        }
+
+        return jobPostMapper.updateJobStatus(id, status.toUpperCase()) > 0;
+    }
 }
 

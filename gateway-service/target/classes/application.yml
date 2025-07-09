@@ -39,6 +39,14 @@ zuul:
       path: /admin/**
       serviceId: admin-service
       strip-prefix: false
+    interview-service:
+      path: /interviews/**
+      serviceId: interview-service
+      strip-prefix: false
+    notify-service:
+      path: /api/notifications/**
+      serviceId: notify-service
+      strip-prefix: false
   sensitive-headers:
   add-host-header: true
 

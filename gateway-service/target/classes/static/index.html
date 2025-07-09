@@ -6,24 +6,25 @@
     <title>登录 / 注册</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
         .container {
-            width: 360px;
+            width: 370px;
             background: #fff;
-            padding: 30px 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            border-radius: 8px;
+            padding: 38px 28px 32px 28px;
+            box-shadow: 0 8px 32px rgba(102,126,234,0.13);
+            border-radius: 16px;
         }
         h2 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             color: #333;
+            letter-spacing: 1px;
         }
         form {
             display: none;
@@ -33,47 +34,67 @@
             display: flex;
         }
         label {
-            margin-bottom: 6px;
+            margin-bottom: 7px;
             font-weight: bold;
             color: #555;
         }
         input[type="text"],
         input[type="password"],
         select {
-            padding: 8px 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
+            padding: 10px 12px;
+            margin-bottom: 18px;
+            border: 2px solid #e9ecef;
+            border-radius: 7px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102,126,234,0.10);
         }
         button {
-            background: #007bff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
-            padding: 10px;
-            border-radius: 4px;
-            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            color: #fff;
             cursor: pointer;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 17px;
+            margin-top: 2px;
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            box-shadow: 0 2px 8px rgba(102,126,234,0.10);
         }
         button:hover {
-            background: #0056b3;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.18);
         }
         .toggle-link {
             margin-top: 10px;
             text-align: center;
-            color: #007bff;
+            color: #667eea;
             cursor: pointer;
             user-select: none;
+            font-size: 15px;
         }
         .toggle-link:hover {
             text-decoration: underline;
+            color: #764ba2;
         }
         .msg {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 12px;
             color: red;
             min-height: 20px;
+            font-size: 15px;
+        }
+        @media (max-width: 500px) {
+            .container {
+                width: 98vw;
+                padding: 18px 2vw 18px 2vw;
+            }
         }
     </style>
 </head>

@@ -9,6 +9,6 @@ import java.util.Map;
 @FeignClient(name = "user-service", fallback = UserServiceClientFallback.class)
 public interface UserServiceClient {
     
-    @GetMapping("/api/users/{id}")
+    @GetMapping("/user/exists/{id}")
     ResponseEntity<Map<String, Object>> getUserById(@PathVariable("id") Long id);
 } 

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>面试参数验证测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .validation-rules {
+            background: #e2e3e5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>面试参数验证测试</h1>
+        
+        <div class="validation-rules">
+            <h3>后端验证规则：</h3>
+            <ul>
+                <li><strong>面试类型 (interviewType):</strong> 必须是 "ONLINE" 或 "OFFLINE"</li>
+                <li><strong>面试状态 (status):</strong> 必须是 "SCHEDULED"、"IN_PROGRESS"、"COMPLETED"、"CANCELLED"、"NO_SHOW" 或 "PENDING"</li>
+                <li><strong>其他字段:</strong> 不能为空</li>
+            </ul>
+        </div>
+
+        <form id="testForm">
+            <div class="form-group">
+                <label for="jobId">职位ID *</label>
+                <input type="number" id="jobId" value="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="userId">候选人用户ID *</label>
+                <input type="number" id="userId" value="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="scheduledTime">面试时间 *</label>
+                <input type="datetime-local" id="scheduledTime" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="location">面试地点 *</label>
+                <input type="text" id="location" value="线上会议室" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="interviewType">面试类型 *</label>
+                <select id="interviewType" required>
+                    <option value="ONLINE">线上面试</option>
+                    <option value="OFFLINE">线下面试</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="interviewer">面试官 *</label>
+                <input type="text" id="interviewer" value="张经理" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="status">面试状态</label>
+                <select id="status">
+                    <option value="SCHEDULED">已安排</option>
+                    <option value="PENDING">待确认</option>
+                    <option value="IN_PROGRESS">进行中</option>
+                    <option value="COMPLETED">已完成</option>
+                    <option value="CANCELLED">已取消</option>
+                    <option value="NO_SHOW">未出席</option>
+                </select>
+            </div>
+            
+            <button type="submit">测试创建面试</button>
+        </form>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // 设置默认面试时间为明天
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(14, 0, 0, 0);
+        document.getElementById('scheduledTime').value = tomorrow.toISOString().slice(0, 16);
+
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = `result ${type}`;
+            result.style.display = 'block';
+        }
+
+        function validateFormData(formData) {
+            const errors = [];
+            
+            // 验证面试类型
+            if (!['ONLINE', 'OFFLINE'].includes(formData.interviewType)) {
+                errors.push(`面试类型必须是 ONLINE 或 OFFLINE，当前值: ${formData.interviewType}`);
+            }
+            
+            // 验证面试状态
+            const validStatuses = ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'PENDING'];
+            if (!validStatuses.includes(formData.status)) {
+                errors.push(`面试状态必须是 ${validStatuses.join('、')} 之一，当前值: ${formData.status}`);
+            }
+            
+            // 验证其他必填字段
+            if (!formData.jobId) errors.push('职位ID不能为空');
+            if (!formData.userId) errors.push('用户ID不能为空');
+            if (!formData.scheduledTime) errors.push('面试时间不能为空');
+            if (!formData.location) errors.push('面试地点不能为空');
+            if (!formData.interviewer) errors.push('面试官不能为空');
+            
+            return errors;
+        }
+
+        document.getElementById('testForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                jobId: parseInt(document.getElementById('jobId').value),
+                userId: parseInt(document.getElementById('userId').value),
+                scheduledTime: document.getElementById('scheduledTime').value,
+                location: document.getElementById('location').value,
+                interviewType: document.getElementById('interviewType').value,
+                interviewer: document.getElementById('interviewer').value,
+                status: document.getElementById('status').value
+            };
+
+            console.log('表单数据:', formData);
+            
+            // 前端验证
+            const validationErrors = validateFormData(formData);
+            if (validationErrors.length > 0) {
+                showResult(`前端验证失败:\n${validationErrors.join('\n')}`, 'error');
+                return;
+            }
+
+            showResult('前端验证通过，正在发送请求...', 'info');
+
+            // 发送到后端验证
+            fetch('http://localhost:9501/interviews', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer test-token'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('后端响应:', data);
+                if (data.success || data.code === 200) {
+                    showResult(`✅ 创建成功！面试ID: ${data.data.id}\n\n参数验证通过，面试创建成功。`, 'success');
+                } else {
+                    showResult(`❌ 创建失败: ${data.message || '未知错误'}`, 'error');
+                }
+            })
+            .catch(err => {
+                console.error('请求错误:', err);
+                showResult(`❌ 请求错误: ${err.message}`, 'error');
+            });
+        });
+    </script>
+</body>
+</html> 

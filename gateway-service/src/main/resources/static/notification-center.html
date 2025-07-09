@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>通知中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .notification-item {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .notification-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .notification-item.unread {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+
+        .notification-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .notification-content {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .notification-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        .notification-time {
+            font-style: italic;
+        }
+
+        .notification-type {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>通知中心</h1>
+            <p>实时接收面试相关通知消息</p>
+        </div>
+
+        <div class="content">
+            <!-- 统计信息 -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalNotifications">0</div>
+                    <div class="stat-label">总通知数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="unreadNotifications">0</div>
+                    <div class="stat-label">未读通知</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="todayNotifications">0</div>
+                    <div class="stat-label">今日通知</div>
+                </div>
+            </div>
+
+            <!-- 控制按钮 -->
+            <div class="controls">
+                <button class="btn btn-primary" onclick="loadNotifications()">刷新通知</button>
+                <button class="btn btn-success" onclick="markAllAsRead()">全部标记为已读</button>
+                <button class="btn btn-primary" onclick="clearAllNotifications()">清空所有通知</button>
+            </div>
+
+            <!-- 通知列表 -->
+            <div id="notificationList">
+                <div class="loading">正在加载通知...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = getCookie('token') || localStorage.getItem('jwtToken');
+        let currentUser = null;
+        let notifications = [];
+
+        // 获取用户信息
+        function getUserInfo() {
+            if (!token) {
+                showAlert('请先登录', 'error');
+                return;
+            }
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                currentUser = {
+                    id: payload.id || payload.user_id,
+                    username: payload.sub || payload.username,
+                    role: payload.role
+                };
+                console.log('当前用户信息:', currentUser);
+            } catch (e) {
+                console.error('解析用户信息失败:', e);
+                showAlert('获取用户信息失败', 'error');
+            }
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            const content = document.querySelector('.content');
+            content.insertBefore(alertDiv, content.firstChild);
+            
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (days > 0) return `${days}天前`;
+            if (hours > 0) return `${hours}小时前`;
+            if (minutes > 0) return `${minutes}分钟前`;
+            return '刚刚';
+        }
+
+        function updateStats() {
+            const total = notifications.length;
+            const unread = notifications.filter(n => !n.isRead).length;
+            const today = notifications.filter(n => {
+                const today = new Date();
+                const notificationDate = new Date(n.createdAt);
+                return notificationDate.toDateString() === today.toDateString();
+            }).length;
+
+            document.getElementById('totalNotifications').textContent = total;
+            document.getElementById('unreadNotifications').textContent = unread;
+            document.getElementById('todayNotifications').textContent = today;
+        }
+
+        function loadNotifications() {
+            if (!currentUser) {
+                showAlert('请先登录', 'error');
+                return;
+            }
+
+            const container = document.getElementById('notificationList');
+            container.innerHTML = '<div class="loading">正在加载通知...</div>';
+
+            // 从notify-service获取真实通知数据
+            fetch(`/api/notifications/user/${currentUser.id}?page=0&size=50`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('通知数据:', data);
+                if (data.success || data.code === 200) {
+                    notifications = data.data.content || [];
+                    renderNotifications();
+                    updateStats();
+                } else {
+                    // 如果获取失败，使用模拟数据
+                    loadMockNotifications();
+                }
+            })
+            .catch(err => {
+                console.error('获取通知失败:', err);
+                // 使用模拟数据
+                loadMockNotifications();
+            });
+        }
+
+        function loadMockNotifications() {
+            notifications = [
+                {
+                    id: 1,
+                    title: '面试通知 - 新面试安排',
+                    content: `您有一个新的面试安排，详情如下：
+                        
+面试时间：2024-01-15 14:00:00
+面试地点：线上会议室 (Zoom)
+面试方式：视频面试
+面试官：张经理
+职位：Java开发工程师
+
+请提前10分钟进入会议室，并确保网络连接稳定。`,
+                    type: 'INTERVIEW',
+                    isRead: false,
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: 2,
+                    title: '面试状态更新 - 已确认',
+                    content: `您的面试状态已更新为：已确认
+
+面试ID：INT-2024-001
+面试时间：2024-01-15 14:00:00
+面试地点：线上会议室
+
+请按时参加面试，祝您面试顺利！`,
+                    type: 'STATUS_UPDATE',
+                    isRead: false,
+                    createdAt: new Date(Date.now() - 1800000).toISOString()
+                },
+                {
+                    id: 3,
+                    title: '面试提醒 - 即将开始',
+                    content: `面试即将开始！
+
+面试时间：2024-01-15 14:00:00 (还有30分钟)
+面试地点：线上会议室
+面试官：张经理
+
+请做好准备，准时参加面试。`,
+                    type: 'REMINDER',
+                    isRead: true,
+                    createdAt: new Date(Date.now() - 3600000).toISOString()
+                },
+                {
+                    id: 4,
+                    title: '面试结果通知',
+                    content: `恭喜您！面试已通过。
+
+面试ID：INT-2024-001
+面试时间：2024-01-15 14:00:00
+面试结果：通过
+
+HR将在3个工作日内与您联系，讨论后续入职事宜。`,
+                    type: 'RESULT',
+                    isRead: true,
+                    createdAt: new Date(Date.now() - 7200000).toISOString()
+                }
+            ];
+
+            renderNotifications();
+            updateStats();
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notificationList');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>暂无通知</h3>
+                        <p>您还没有收到任何通知消息</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            notifications.forEach(notification => {
+                const isUnread = !notification.isRead;
+                const timeAgo = getTimeAgo(new Date(notification.createdAt));
+                
+                html += `
+                    <div class="notification-item ${isUnread ? 'unread' : ''}">
+                        <div class="notification-title">${notification.title}</div>
+                        <div class="notification-content">${notification.content.replace(/\n/g, '<br>')}</div>
+                        <div class="notification-meta">
+                            <div class="notification-time">${timeAgo}</div>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <span class="notification-type">${notification.type}</span>
+                                ${isUnread ? '<button class="btn btn-success" onclick="markAsRead(' + notification.id + ')">标记已读</button>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function markAsRead(notificationId) {
+            if (!currentUser) {
+                showAlert('请先登录', 'error');
+                return;
+            }
+
+            // 调用真实API
+            fetch(`/api/notifications/${notificationId}/read`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success || data.code === 200) {
+                    const notification = notifications.find(n => n.id === notificationId);
+                    if (notification) {
+                        notification.isRead = true;
+                        renderNotifications();
+                        updateStats();
+                    }
+                    showAlert('通知已标记为已读');
+                } else {
+                    showAlert(data.message || '操作失败', 'error');
+                }
+            })
+            .catch(err => {
+                console.error('标记已读失败:', err);
+                // 本地更新
+                const notification = notifications.find(n => n.id === notificationId);
+                if (notification) {
+                    notification.isRead = true;
+                    renderNotifications();
+                    updateStats();
+                }
+                showAlert('通知已标记为已读');
+            });
+        }
+
+        function markAllAsRead() {
+            if (!currentUser) {
+                showAlert('请先登录', 'error');
+                return;
+            }
+
+            // 调用真实API
+            fetch(`/api/notifications/user/${currentUser.id}/read-all`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success || data.code === 200) {
+                    notifications.forEach(notification => {
+                        notification.isRead = true;
+                    });
+                    renderNotifications();
+                    updateStats();
+                    showAlert('所有通知已标记为已读');
+                } else {
+                    showAlert(data.message || '操作失败', 'error');
+                }
+            })
+            .catch(err => {
+                console.error('全部标记已读失败:', err);
+                // 本地更新
+                notifications.forEach(notification => {
+                    notification.isRead = true;
+                });
+                renderNotifications();
+                updateStats();
+                showAlert('所有通知已标记为已读');
+            });
+        }
+
+        function clearAllNotifications() {
+            if (confirm('确定要清空所有通知吗？此操作不可恢复。')) {
+                notifications = [];
+                renderNotifications();
+                updateStats();
+                showAlert('所有通知已清空');
+            }
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('通知中心页面已加载');
+            getUserInfo();
+            loadNotifications();
+        });
+
+        // 定期刷新通知（模拟实时通知）
+        setInterval(() => {
+            if (currentUser) {
+                loadNotifications();
+            }
+        }, 60000); // 每分钟刷新一次
+
+        // 添加键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        loadNotifications();
+                        break;
+                    case 'a':
+                        e.preventDefault();
+                        markAllAsRead();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

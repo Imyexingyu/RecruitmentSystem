@@ -95,32 +95,34 @@ public class InterviewController {
     public ResponseEntity<ApiResponse<InterviewDTO>> createInterview(
             @Valid @RequestBody InterviewRequest request,
             HttpServletRequest httpRequest) {
-        
+
         // 获取并验证令牌
         String token = getTokenFromRequest(httpRequest);
         if (token == null || !jwtUtil.validateToken(token)) {
             log.error("未提供有效的JWT令牌");
             return ResponseEntity.status(401).body(ApiResponse.error("未提供有效的JWT令牌，请重新登录"));
         }
-        
+
         // 从令牌中获取用户信息
         String username = jwtUtil.getUsernameFromToken(token);
         String role = jwtUtil.getRoleFromToken(token);
         Long currentUserId = jwtUtil.getUserIdFromToken(token);
-        
+
         log.info("收到创建面试请求，用户: {}, 角色: {}, 用户ID: {}", username, role, currentUserId);
-        
-        try {
-            // 验证用户是否有权限创建面试
-            if (!isAuthorizedToScheduleInterview(role)) {
-                return ResponseEntity.status(403).body(ApiResponse.error("没有权限创建面试"));
-            }
-            
-            InterviewDTO interview = interviewService.createInterview(request, currentUserId);
-            return ResponseEntity.ok(ApiResponse.success(interview));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
+        System.out.println("111"+currentUserId+" "+ role + " " + username);
+//        try {
+//            // 验证用户是否有权限创建面试
+//            if (!isAuthorizedToScheduleInterview(role)) {
+//                return ResponseEntity.status(403).body(ApiResponse.error("没有权限创建面试"));
+//            }
+//
+//            InterviewDTO interview = interviewService.createInterview(request, currentUserId);
+//            return ResponseEntity.ok(ApiResponse.success(interview));
+//        } catch (IllegalArgumentException e) {
+//            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+//        }
+        InterviewDTO interview = interviewService.createInterview(request, currentUserId);
+        return ResponseEntity.ok(ApiResponse.success(interview));
     }
     
     /**

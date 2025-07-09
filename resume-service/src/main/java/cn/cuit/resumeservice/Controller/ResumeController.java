@@ -89,4 +89,14 @@ public class ResumeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Result.fail("未找到该用户的简历"));
         }
     }
+
+    @GetMapping("who/{id}")
+    public ResponseEntity<Result<ResumeDTO>> getResume(@PathVariable Integer id) {
+        ResumeDTO resume = resumeService.getFullResumeByUserId(id);
+        if (resume != null) {
+            return ResponseEntity.ok(Result.success(resume));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Result.fail("未找到该用户的简历"));
+        }
+    }
 }

@@ -9,27 +9,37 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
-        body { height: 100vh; margin: 0; }
+        body { height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .sidebar {
             height: calc(100vh - 56px);
             background-color: #f8f9fa;
             padding-top: 1rem;
             border-right: 1px solid #dee2e6;
+            border-top-left-radius: 16px;
+            border-bottom-left-radius: 16px;
+            box-shadow: 2px 0 12px rgba(102,126,234,0.07);
         }
         .sidebar a {
             display: block;
-            padding: 10px 15px;
+            padding: 12px 18px;
             color: #333;
             text-decoration: none;
             cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
         }
-        .sidebar a:hover {
-            background-color: #e2e6ea;
+        .sidebar a:hover, .sidebar a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
         }
         .main-content {
-            padding: 20px;
+            padding: 28px 18px;
             background-color: #fff;
             min-height: calc(100vh - 56px);
+            border-radius: 0 16px 16px 0;
+            box-shadow: 0 4px 24px rgba(102,126,234,0.08);
         }
         .refresh-btn {
             float: right;
@@ -39,6 +49,26 @@
         }
         .table th, .table td {
             vertical-align: middle !important;
+        }
+        .navbar .dropdown-menu {
+            right: 0;
+            left: auto;
+        }
+        @media (max-width: 900px) {
+            .main-content {
+                padding: 12px 2px;
+            }
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                border-radius: 0;
+                box-shadow: none;
+            }
+            .main-content {
+                border-radius: 0;
+                box-shadow: none;
+                padding: 6px 1px;
+            }
         }
     </style>
 </head>

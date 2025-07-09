@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>创建面试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .notification-info {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #1976d2;
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>创建面试</h1>
+
+    <div class="notification-info">
+      <strong>消息服务集成:</strong> 创建面试后会自动发送通知消息到候选人
+    </div>
+
+    <form id="interviewForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="jobId">职位ID *</label>
+          <input type="number" id="jobId" value="1" required />
+        </div>
+        <div class="form-group">
+          <label for="userId">候选人用户ID *</label>
+          <input type="number" id="userId" value="1" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="scheduledTime">面试时间 *</label>
+          <input type="datetime-local" id="scheduledTime" required />
+        </div>
+        <div class="form-group">
+          <label for="location">面试地点 *</label>
+          <input type="text" id="location" value="线上会议室" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="interviewType">面试类型 *</label>
+          <select id="interviewType" required>
+            <option value="ONLINE">线上面试</option>
+            <option value="OFFLINE">线下面试</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="interviewer">面试官 *</label>
+          <input type="text" id="interviewer" value="张经理" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="status">面试状态</label>
+        <select id="status">
+          <option value="SCHEDULED">已安排</option>
+          <option value="PENDING">待确认</option>
+          <option value="IN_PROGRESS">进行中</option>
+          <option value="COMPLETED">已完成</option>
+          <option value="CANCELLED">已取消</option>
+          <option value="NO_SHOW">未出席</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn">创建面试并发送通知</button>
+    </form>
+
+    <div id="result" class="alert"></div>
+  </div>
+
+  <script>
+    // 设置默认面试时间为明天
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(14, 0, 0, 0);
+    document.getElementById('scheduledTime').value = tomorrow.toISOString().slice(0, 16);
+
+    const token = getCookie('token') || localStorage.getItem('jwtToken');
+    let currentUser = null;
+
+    // 获取用户信息
+    function getUserInfo() {
+      if (!token) {
+        showAlert('请先登录', 'error');
+        return;
+      }
+
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        currentUser = {
+          id: payload.id || payload.user_id,
+          username: payload.sub || payload.username,
+          role: payload.role
+        };
+        console.log('当前用户信息:', currentUser);
+      } catch (e) {
+        console.error('解析用户信息失败:', e);
+        showAlert('获取用户信息失败', 'error');
+      }
+    }
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    }
+
+    function showAlert(message, type = 'success') {
+      const result = document.getElementById('result');
+      result.textContent = message;
+      result.className = `alert alert-${type}`;
+      result.style.display = 'block';
+      setTimeout(() => {
+        result.style.display = 'none';
+      }, 5000);
+    }
+
+    // 创建面试
+    document.getElementById('interviewForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      if (!currentUser) {
+        showAlert('请先登录', 'error');
+        return;
+      }
+
+      const formData = {
+        jobId: parseInt(document.getElementById('jobId').value),
+        userId: parseInt(document.getElementById('userId').value),
+        scheduledTime: document.getElementById('scheduledTime').value,
+        location: document.getElementById('location').value,
+        interviewType: document.getElementById('interviewType').value,
+        interviewer: document.getElementById('interviewer').value,
+        status: document.getElementById('status').value
+      };
+
+      if (new Date(formData.scheduledTime) <= new Date()) {
+        showAlert('面试时间必须晚于当前时间', 'error');
+        return;
+      }
+
+      console.log('创建面试数据:', formData);
+
+      fetch('http://localhost:9501/interviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log('面试创建响应:', data);
+        if (data.success || data.code === 200) {
+          const successMsg = `面试创建成功！面试ID: ${data.data.id}\n\n通知消息已发送到候选人。`;
+          showAlert(successMsg, "success");
+          this.reset();
+          // 重新设置默认时间
+          document.getElementById('scheduledTime').value = tomorrow.toISOString().slice(0, 16);
+        } else {
+          showAlert(data.message || '创建失败', "error");
+        }
+      })
+      .catch(err => {
+        console.error('请求错误:', err);
+        showAlert(`请求错误: ${err.message}`, "error");
+      });
+    });
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('面试创建页面已加载');
+      getUserInfo();
+      console.log('消息服务集成说明:');
+      console.log('1. 创建面试后会自动发送RabbitMQ消息');
+      console.log('2. notify-service会接收消息并保存通知');
+      console.log('3. 候选人可以在通知中心查看面试通知');
+    });
+  </script>
+</body>
+</html>

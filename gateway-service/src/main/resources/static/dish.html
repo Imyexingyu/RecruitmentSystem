@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>招聘系统仪表板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 48px 40px 36px 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 3.2em;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+        }
+        .header p {
+            opacity: 0.92;
+            font-size: 1.25em;
+        }
+        .content {
+            padding: 48px 40px 40px 40px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 36px;
+            margin-bottom: 48px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 36px 28px 32px 28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            border: 2px solid transparent;
+        }
+        .card:hover {
+            transform: translateY(-7px) scale(1.02);
+            box-shadow: 0 24px 48px rgba(102,126,234,0.13);
+            border-color: #667eea;
+        }
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 22px;
+            font-size: 28px;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(102,126,234,0.18);
+        }
+        .card h3 {
+            color: #333;
+            margin-bottom: 18px;
+            font-size: 1.6em;
+        }
+        .card p {
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 22px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 13px 28px;
+            border: none;
+            border-radius: 9px;
+            font-size: 17px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.10);
+        }
+        .btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.18);
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-info {
+            background: #17a2b8;
+        }
+        .status-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 36px 30px 30px 30px;
+            margin-bottom: 36px;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+        }
+        .status-item {
+            text-align: center;
+            padding: 24px 10px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .status-number {
+            font-size: 2.7em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .status-label {
+            color: #666;
+            font-size: 1em;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 22px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e9ecef;
+            font-size: 1.08em;
+        }
+        @media (max-width: 900px) {
+            .content {
+                padding: 32px 10px 30px 10px;
+            }
+            .header {
+                padding: 32px 10px 24px 10px;
+            }
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+            .content, .header {
+                padding-left: 6px;
+                padding-right: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>招聘系统仪表板</h1>
+        <p>高效管理面试流程，实时接收通知消息</p>
+    </div>
+    <div class="content">
+        <!-- 系统状态 -->
+        <div class="status-section">
+            <h2 style="margin-bottom: 20px; color: #333;">系统状态</h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-number" id="totalInterviews">0</div>
+                    <div class="status-label">总面试数</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-number" id="pendingInterviews">0</div>
+                    <div class="status-label">待处理面试</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-number" id="totalNotifications">0</div>
+                    <div class="status-label">通知消息</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-number" id="unreadNotifications">0</div>
+                    <div class="status-label">未读通知</div>
+                </div>
+            </div>
+        </div>
+        <!-- 功能卡片 -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-icon">📝</div>
+                <h3>创建面试</h3>
+                <p>创建新的面试安排，系统会自动发送通知消息给候选人。支持多种面试类型和状态管理。</p>
+                <a href="create-interview.html" class="btn">开始创建</a>
+            </div>
+            <div class="card">
+                <div class="card-icon">📋</div>
+                <h3>面试管理</h3>
+                <p>完整的面试管理系统，包含创建、查看、更新状态等功能。支持批量操作和实时更新。</p>
+                <a href="interview-management.html" class="btn">进入管理</a>
+            </div>
+            <div class="card">
+                <div class="card-icon">📬</div>
+                <h3>通知中心</h3>
+                <p>专门的通知消息管理页面，提供统计信息、消息分类、标记已读等功能。</p>
+                <a href="notification-center.html" class="btn">查看通知</a>
+            </div>
+            <div class="card">
+                <div class="card-icon">🔍</div>
+                <h3>面试列表</h3>
+                <p>查看所有面试安排，支持按用户筛选。提供详细的面试信息和状态显示。</p>
+                <a href="interview-list.html" class="btn">查看列表</a>
+            </div>
+            <div class="card">
+                <div class="card-icon">🧪</div>
+                <h3>测试工具</h3>
+                <p>专门用于测试面试创建和消息发送功能的工具页面，包含详细的操作日志。</p>
+                <a href="test-interview.html" class="btn">开始测试</a>
+            </div>
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <h3>系统监控</h3>
+                <p>监控系统运行状态，查看服务健康状态和性能指标。</p>
+                <a href="#" class="btn btn-info" onclick="showSystemStatus()">查看状态</a>
+            </div>
+        </div>
+        <!-- 快速操作 -->
+        <div style="text-align: center; margin-top: 48px;">
+            <h2 style="margin-bottom: 22px; color: #333;">快速操作</h2>
+            <div style="display: flex; gap: 18px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-success" onclick="quickCreateInterview()">快速创建面试</button>
+                <button class="btn btn-warning" onclick="checkNotifications()">检查通知</button>
+                <button class="btn" onclick="refreshDashboard()">刷新仪表板</button>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <p>招聘系统 v1.0 | 基于 Spring Cloud 微服务架构 | 消息服务集成</p>
+    </div>
+</div>
+<script>
+    // 模拟系统状态数据
+    function updateSystemStatus() {
+        // 这里应该从后端API获取真实数据
+        document.getElementById('totalInterviews').textContent = Math.floor(Math.random() * 50) + 10;
+        document.getElementById('pendingInterviews').textContent = Math.floor(Math.random() * 10) + 1;
+        document.getElementById('totalNotifications').textContent = Math.floor(Math.random() * 100) + 20;
+        document.getElementById('unreadNotifications').textContent = Math.floor(Math.random() * 20) + 1;
+    }
+    function quickCreateInterview() {
+        window.open('create-interview.html', '_blank');
+    }
+    function checkNotifications() {
+        window.open('notification-center.html', '_blank');
+    }
+    function refreshDashboard() {
+        updateSystemStatus();
+        showAlert('仪表板已刷新', 'success');
+    }
+    function showSystemStatus() {
+        showAlert('系统状态功能开发中...', 'info');
+    }
+    function showAlert(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+        if (type === 'success') {
+            alertDiv.style.background = '#28a745';
+        } else if (type === 'error') {
+            alertDiv.style.background = '#dc3545';
+        } else {
+            alertDiv.style.background = '#17a2b8';
+        }
+        alertDiv.textContent = message;
+        document.body.appendChild(alertDiv);
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 3000);
+    }
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSystemStatus();
+        setInterval(updateSystemStatus, 30000);
+    });
+    // 添加键盘快捷键
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key) {
+                case 'r':
+                    e.preventDefault();
+                    refreshDashboard();
+                    break;
+                case 'n':
+                    e.preventDefault();
+                    quickCreateInterview();
+                    break;
+                case 'c':
+                    e.preventDefault();
+                    checkNotifications();
+                    break;
+            }
+        }
+    });
+    // 添加CSS动画
+    const style = document.createElement('style');
+    style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+    document.head.appendChild(style);
+</script>
+</body>
+</html>

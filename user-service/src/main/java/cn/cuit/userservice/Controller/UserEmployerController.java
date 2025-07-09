@@ -1,11 +1,14 @@
 package cn.cuit.userservice.Controller;
 
+import cn.cuit.userservice.Entity.UserCandidate;
 import cn.cuit.userservice.Entity.UserEmployer;
 import cn.cuit.userservice.Service.UserEmployerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -16,13 +19,13 @@ public class UserEmployerController {
 
     @GetMapping("/companyInfo2")
     public UserEmployer getEmployerInfo2(@RequestParam("uid") Long uid,HttpServletRequest request) {
-        if(request.getHeader("role").equals("admin")) {
+//        if(request.getHeader("role").equals("admin")) {
             return employerService.getByUserId(uid);
-        }else{
-            Long id = Long.valueOf((request.getHeader("user_id")));
-            return employerService.getByUserId(id);
         }
-    }
+//            Long id = Long.valueOf((request.getHeader("user_id")));
+//            return employerService.getByUserId(id);
+//        }
+//    }
 
     @GetMapping("/companyInfo")
     public UserEmployer getEmployerInfo(HttpServletRequest request) {
@@ -41,4 +44,6 @@ public class UserEmployerController {
         int result = employerService.update(employer);
         return result > 0 ? "更新成功" : "更新失败";
     }
+
+
 }

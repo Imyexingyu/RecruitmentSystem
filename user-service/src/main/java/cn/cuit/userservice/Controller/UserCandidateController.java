@@ -35,4 +35,14 @@ public class UserCandidateController {
         int result = candidateService.update(candidate);
         return result > 0 ? "更新成功" : "更新失败";
     }
+
+    @GetMapping("/exists/{id}")
+    public Map<String, Object> existsCandidate(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+        UserCandidate candidate = candidateService.getByUserId(id);
+        boolean exists = candidate != null;
+        response.put("success", true);
+        response.put("data", exists);
+        return response;
+    }
 }

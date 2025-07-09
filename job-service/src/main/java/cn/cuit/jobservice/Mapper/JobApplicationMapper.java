@@ -24,6 +24,10 @@ public interface JobApplicationMapper {
     @Select("SELECT COUNT(*) FROM job_application WHERE status = #{status}")
     int countByStatus(@Param("status") String status);
 
+    @Select("SELECT * FROM job_application WHERE candidate_id = #{candidateId}")
+    List<JobApplication> findByCandidateId(Long candidateId);
+    @Update("UPDATE job_application SET status = #{status} WHERE id = #{id}")
+    int updateStatus(@Param("id") Long id, @Param("status") String status);
 
 }
 

@@ -7,7 +7,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/recruitmentSystem_interview?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: "041020"
+    password: "123456"
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -88,7 +88,7 @@ rabbitmq:
   queue:
     interview-notification: interview.notification.queue
   routing-key:
-    interview-notification: interview.notification.routing-key
+    interview-notification: interview.notification
 
 springdoc:
   api-docs:

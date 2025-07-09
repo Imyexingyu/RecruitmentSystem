@@ -12,13 +12,11 @@ import java.util.Optional;
 @Repository
 public interface InterviewRepository extends JpaRepository<Interview, Long> {
     
-    List<Interview> findByApplicationId(Long applicationId);
-    
-    Page<Interview> findByApplicationId(Long applicationId, Pageable pageable);
-    
-    Optional<Interview> findByIdAndApplicationId(Long id, Long applicationId);
-
     List<Interview> findByJobId(Long jobId);
     
     List<Interview> findByUserId(Long userId);
+    
+    Page<Interview> findByJobId(Long jobId, Pageable pageable);
+    
+    Page<Interview> findByUserId(Long userId, Pageable pageable);
 } 

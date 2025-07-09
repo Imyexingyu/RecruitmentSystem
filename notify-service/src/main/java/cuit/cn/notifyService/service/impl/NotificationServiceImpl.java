@@ -51,10 +51,10 @@ public class NotificationServiceImpl implements NotificationService {
         }
         
         // 与用户服务集成，验证用户是否存在
-        ResponseEntity<Map<String, Object>> userResponse = userServiceClient.getUserById(userId);
-        if (userResponse.getBody() != null && userResponse.getBody().containsKey("error")) {
-            logger.warning("用户验证失败: " + userResponse.getBody().get("error"));
-        }
+        //ResponseEntity<Map<String, Object>> userResponse = userServiceClient.getUserById(userId);
+//        if (userResponse.getBody() != null && userResponse.getBody().containsKey("error")) {
+//            logger.warning("用户验证失败: " + userResponse.getBody().get("error"));
+//        }
         
         Notification notification = new Notification();
         notification.setUserId(userId);
@@ -84,10 +84,10 @@ public class NotificationServiceImpl implements NotificationService {
         }
         
         // 与用户服务集成，验证用户是否存在
-        ResponseEntity<Map<String, Object>> userResponse = userServiceClient.getUserById(userId);
-        if (userResponse.getBody() != null && userResponse.getBody().containsKey("error")) {
-            logger.warning("用户验证失败: " + userResponse.getBody().get("error"));
-        }
+//        ResponseEntity<Map<String, Object>> userResponse = userServiceClient.getUserById(userId);
+//        if (userResponse.getBody() != null && userResponse.getBody().containsKey("error")) {
+//            logger.warning("用户验证失败: " + userResponse.getBody().get("error"));
+//        }
         
         Page<Notification> notifications = notificationRepository.findByUserId(userId, pageable);
         return notifications.map(this::convertToDTO);
@@ -100,10 +100,10 @@ public class NotificationServiceImpl implements NotificationService {
         }
         
         // 与用户服务集成，验证用户是否存在
-        ResponseEntity<Map<String, Object>> userResponse = userServiceClient.getUserById(userId);
-        if (userResponse.getBody() != null && userResponse.getBody().containsKey("error")) {
-            logger.warning("用户验证失败: " + userResponse.getBody().get("error"));
-        }
+//        ResponseEntity<Map<String, Object>> userResponse = userServiceClient.getUserById(userId);
+//        if (userResponse.getBody() != null && userResponse.getBody().containsKey("error")) {
+//            logger.warning("用户验证失败: " + userResponse.getBody().get("error"));
+//        }
         
         List<Notification> notifications = notificationRepository.findByUserIdAndIsRead(userId, false);
         return notifications.stream()
@@ -118,10 +118,10 @@ public class NotificationServiceImpl implements NotificationService {
         }
         
         // 与用户服务集成，验证用户是否存在
-        ResponseEntity<Map<String, Object>> userResponse = userServiceClient.getUserById(userId);
-        if (userResponse.getBody() != null && userResponse.getBody().containsKey("error")) {
-            logger.warning("用户验证失败: " + userResponse.getBody().get("error"));
-        }
+//        ResponseEntity<Map<String, Object>> userResponse = userServiceClient.getUserById(userId);
+//        if (userResponse.getBody() != null && userResponse.getBody().containsKey("error")) {
+//            logger.warning("用户验证失败: " + userResponse.getBody().get("error"));
+//        }
         
         return notificationRepository.countByUserIdAndIsRead(userId, false);
     }
@@ -157,10 +157,10 @@ public class NotificationServiceImpl implements NotificationService {
         }
         
         // 与用户服务集成，验证用户是否存在
-        ResponseEntity<Map<String, Object>> userResponse = userServiceClient.getUserById(userId);
-        if (userResponse.getBody() != null && userResponse.getBody().containsKey("error")) {
-            logger.warning("用户验证失败: " + userResponse.getBody().get("error"));
-        }
+//        ResponseEntity<Map<String, Object>> userResponse = userServiceClient.getUserById(userId);
+//        if (userResponse.getBody() != null && userResponse.getBody().containsKey("error")) {
+//            logger.warning("用户验证失败: " + userResponse.getBody().get("error"));
+//        }
         
         try {
         List<Notification> unreadNotifications = notificationRepository.findByUserIdAndIsRead(userId, false);
